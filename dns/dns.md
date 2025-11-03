@@ -23,7 +23,7 @@ ifp.es - IFP (bajo [Red.es](http://red.es)) - El dominio ifp.es pertenece a la o
 \
 
 
-![](<../.gitbook/assets/unknown (3).png>)
+![](<../.gitbook/assets/unknown (3) (1).png>)
 
 \
 
@@ -33,20 +33,20 @@ La consulta whois del dominio .es muestra que está gestionado por Red.es, una e
 \
 
 
-![](<../.gitbook/assets/unknown (4).png>)
+![](<../.gitbook/assets/unknown (4) (1).png>)
 
 Al probar el comando whois ifp.es en la terminal aparece un aviso: el dominio .es no tiene un servidor whois público al que se pueda acceder por consola. En su lugar, la consulta debe hacerse directamente en la web oficial de Red.es ([www.dominios.es)](about:blank).
 
 
 
-![](<../.gitbook/assets/unknown (5).png>)
+![](<../.gitbook/assets/unknown (5) (1).png>)
 
 En la página oficial de dominios.es sí se muestra la información del dominio ifp.es: está activo, registrado a nombre del Centro Superior de Altos Estudios Internacionales SLU, con alta en 2005 y vigencia hasta 2025. El agente registrador es Nominalia.\
 
 
 3\.
 
-![](<../.gitbook/assets/unknown (6).png>)
+![](<../.gitbook/assets/unknown (6) (1).png>)
 
 192.168.64.1 es el DNS de mi red local.
 
@@ -71,10 +71,10 @@ Dentro de cada bloque:
 \
 
 
-![](<../.gitbook/assets/unknown (7).png>)
+![](<../.gitbook/assets/unknown (7) (1).png>)
 
 \
-![](<../.gitbook/assets/unknown (8).png>)
+![](<../.gitbook/assets/unknown (8) (1).png>)
 
 Lo hemos hecho con linux también, con el comando dig (Domain Information grouper) que sirve para hacer preguntas al sistema DNS y ver respuestas crudas.&#x20;
 
@@ -92,7 +92,7 @@ HERRAMIENTAS ONLINE
 
 * [https://ping.eu](https://ping.eu/) : Permite ver IP públicas y usar utilidades como whois, dns lookup, traceroute y ping.
 
-![](<../.gitbook/assets/unknown (9).png>)
+![](<../.gitbook/assets/unknown (9) (1).png>)
 
 Aquí se muestra los datos básicos de registro, como propietario, empresa y fechas
 
@@ -101,7 +101,7 @@ Aquí se muestra los datos básicos de registro, como propietario, empresa y fec
 
 * [Dominios.es](https://www.dominios.es/) : Es la herramienta oficial para consultar información sobre dominios con extensión .es.
 
-![](<../.gitbook/assets/unknown (10).png>)
+![](<../.gitbook/assets/unknown (10) (1).png>)
 
 Muestra la disponibilidad de varios dominios con extensión .es.
 
@@ -110,13 +110,13 @@ Muestra la disponibilidad de varios dominios con extensión .es.
 
 * [https://centralops.net/co](https://centralops.net/co): Ofrece el servicio Domain Dossier, que combina en un mismo informe datos de whois, rutas de red y servidores.
 
-![](<../.gitbook/assets/unknown (11).png>)
+![](<../.gitbook/assets/unknown (11) (1).png>)
 
 Informe Domain Dossier en CentralOps: combina WHOIS con datos de ruta y servidores, útil para ver varias comprobaciones en un único informe
 
 * https://www.nslookup.io : Permite revisar registros DNS A, MX, NS, TXT, entre otros de cualquier dominio.
 
-![](<../.gitbook/assets/unknown (12).png>)
+![](<../.gitbook/assets/unknown (12) (1).png>)
 
 Se ve direcciones (A/AAAA), servidores de correo (MX), servidores de nombres (NS)
 
@@ -125,7 +125,7 @@ Se ve direcciones (A/AAAA), servidores de correo (MX), servidores de nombres (NS
 
 * [https://dnslookup.es](https://dnslookup.es/): Realiza un análisis completo de la configuración DNS de un dominio y detecta errores.
 
-### ![](<../.gitbook/assets/unknown (13).png>)
+### ![](<../.gitbook/assets/unknown (13) (1).png>)
 
 muestra el estado general de la configuración DNS y lista fallos o advertencias que pueden afectar la disponibilid ad o seguridad del dominio
 
@@ -197,11 +197,11 @@ Como usuario o administrador, las implicaciones son claras:
 
 4\.
 
-![](<../.gitbook/assets/unknown (14).png>)
+![](<../.gitbook/assets/unknown (14) (1).png>)
 
 Mediante el comando nslookup se realizaron consultas a distintos dominios (aliexpress.com, google.com, facebook.com, tv3.cat e ifp.es) utilizando servidores DNS públicos. En todos los casos se obtuvieron direcciones IP válidas y coincidentes, aunque las respuestas aparecieron como no autoritativas, ya que provenían de la caché de los resolvers. Los resultados evidencian que los servidores DNS empleados resuelven los dominios de manera coherente y fiable.
 
-![](<../.gitbook/assets/unknown (15).png>)
+![](<../.gitbook/assets/unknown (15) (1).png>)
 
 En el ejercicio realicé dos consultas con el comando nslookup al dominio tv3.cat, usando dos servidores DNS distintos: Google (8.8.8.8) y Cloudflare (1.1.1.1). En ambos casos, la respuesta fue no autoritativa, lo que significa que procedía del caché del resolver y no directamente del servidor autoritativo del dominio. Los dos servidores devolvieron la misma dirección IP (185.104.134.129), mostrando coherencia entre resolutores diferentes.
 
@@ -215,7 +215,7 @@ La opción -type=soa en nslookup muestra el registro SOA de un dominio, que indi
 
 
 
-![](<../.gitbook/assets/unknown (16).png>)
+![](<../.gitbook/assets/unknown (16) (1).png>)
 
 google.com
 
@@ -236,17 +236,17 @@ Minimum: 60 segundos (1 min).
 \
 
 
-![](<../.gitbook/assets/unknown (17).png>)
+![](<../.gitbook/assets/unknown (17) (1).png>)
 
 \
 
 
-![](<../.gitbook/assets/unknown (18).png>)
+![](<../.gitbook/assets/unknown (18) (1).png>)
 
 \
 
 
-![](<../.gitbook/assets/unknown (19).png>)
+![](<../.gitbook/assets/unknown (19) (1).png>)
 
 \
 
@@ -255,7 +255,7 @@ Minimum: 60 segundos (1 min).
 
 El comando nslookup -debug dominio.com muestra el TTL (Time To Live), que indica cuántos segundos un registro DNS permanece en la caché antes de caducar. Cada dominio puede tener valores diferentes.
 
-![](<../.gitbook/assets/unknown (20).png>)
+![](<../.gitbook/assets/unknown (20) (1).png>)
 
 Type = A - dirección IPv4 del dominio.
 
@@ -271,7 +271,7 @@ ttl = 37 - este registro IPv6 se mantendrá 37 segundos en caché.
 
 
 
-![](<../.gitbook/assets/unknown (21).png>)
+![](<../.gitbook/assets/unknown (21) (1).png>)
 
 NS (Name Server): indica qué servidores gestionan el dominio.
 
