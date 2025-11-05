@@ -1,5 +1,5 @@
 ---
-description: In this one I tried (with chat gpt's help) to understand dnssec usage.
+description: On this page I tried (with chat gpt's help) to understand dnssec usage.
 ---
 
 # DNSSEC
