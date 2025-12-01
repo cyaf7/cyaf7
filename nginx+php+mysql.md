@@ -1,340 +1,432 @@
 # NGINX+PHP+MYSQL
 
+Perfecto. Aquí lo tienes **sin comentarios dentro del bloque**, y **los comentarios explicativos debajo**, estilo GitBook claro y limpio.
+
 ***
 
-## **1. Configuración de red y acceso a la VM**
+## 🚀 NGINX + PHP + MySQL (Guía rápida)
 
-#### **Ver IP de la máquina**
+### 1. Configuración de red y acceso a la VM
 
-```
+```bash
 ip a
 ```
 
-Permite conocer la dirección IP asignada. Necesario para pruebas con navegador o curl.
+• Muestra la IP asignada a la VM.\
+• La necesitas para probar desde navegador o curl.
 
-#### **Habilitar SSH en Debian**
-
-```
+```bash
 sudo apt install openssh-server
 sudo systemctl enable ssh
 sudo systemctl start ssh
 ```
 
-Activa el servicio SSH para conectar desde el equipo anfitrión.
+• Instala y activa SSH para conectarte remotamente desde tu ordenador.
 
 ***
 
-## **2. Instalación de Nginx**
+### 2. Instalación de Nginx
 
-#### **Instalar Nginx**
-
-```
+```bash
 sudo apt update
 sudo apt install nginx
 ```
 
-Instala el servidor web que servirá contenido estático y que enviará las peticiones PHP a PHP-FPM.
+• Instala el servidor web Nginx.
 
-#### **Iniciar y verificar Nginx**
-
-```
+```bash
 sudo systemctl start nginx
 sudo systemctl status nginx
 ```
 
-Comprueba que el servicio esté activo.
+• Inicia el servicio y comprueba que esté activo.
 
-#### **Probar Nginx**
-
-```
+```bash
 curl http://localhost
 ```
 
-Debe devolver la página por defecto de Nginx.
+• Si funciona, devuelve la página por defecto de Nginx.
 
 ***
 
-## **3. Estructura de sitios web**
+### 3. Estructura del sitio
 
-#### **Crear directorio del sitio**
-
-```
+```bash
 sudo mkdir -p /var/www/camilly.com
 ```
 
-#### **Asignar permisos correctos**
+• Carpeta donde vivirá tu sitio web.
 
-```
+```bash
 sudo chown -R www-data:www-data /var/www/camilly.com
 sudo chmod -R 755 /var/www/camilly.com
 ```
 
-Es fundamental: si el usuario del servicio web no puede leer los archivos, Nginx devuelve error 500.
+• Permisos correctos para que Nginx pueda leer los archivos.\
+• Si fallan los permisos → error 500.
 
 ***
 
-## **4. Configuración del Virtual Host**
+### 4. Virtual Host
 
-#### **Crear archivo de configuración**
-
-**Puedes simplesmente copiar el con sudo cp /**&#x65;tc/nginx/sites-available/default  **/**&#x65;tc/nginx/sites-available/**camilly.com.conf**
-
-```
-sudo nano /etc/nginx/sites-available/camilly.com.conf
+```bash
+sudo cp /etc/nginx/sites-available/default \
+        /etc/nginx/sites-available/camilly.com.conf
 ```
 
-Contenido final funcional:
+• Creas una copia base del host del sitio.
 
-```
-server {
-    listen 80;
-    root /var/www/camilly.com;
-    index index.php index.html;
-    server_name camilly.com;
+_(Aquí agregas dentro de ese archivo la config final que hicimos: server\_name, root, fastcgi\_pass, etc.)_
 
-    location / {
-        try_files $uri $uri/ =404;
-    }
-
-    location ~ \.php$ {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
-    }
-
-    access_log /var/log/nginx/camilly.access.log;
-    error_log  /var/log/nginx/camilly.error.log;
-}
+```bash
+sudo ln -s /etc/nginx/sites-available/camilly.com.conf \
+           /etc/nginx/sites-enabled/
 ```
 
-#### **Activar el sitio**
+• Activa el sitio.
 
-```
-sudo ln -s /etc/nginx/sites-available/camilly.com.conf /etc/nginx/sites-enabled/
-```
-
-#### **Probar configuración**
-
-```
+```bash
 sudo nginx -t
 ```
 
-Comprueba errores sintácticos.
+• Verifica errores sintácticos.
 
-#### **Recargar servicio**
-
-```
+```bash
 sudo systemctl reload nginx
 ```
 
+• Recarga Nginx para aplicar cambios.
+
 ***
 
-## **5. Instalación y configuración de PHP-FPM**
+### 5. Instalación de PHP-FPM
 
-#### **Instalar PHP y extensiones**
-
-```
+```bash
 sudo apt install php php-fpm php-mysql
 ```
 
-`php-mysql` es fundamental: sin él aparece el error\
-&#xNAN;**"undefined function mysqli\_connect()"**.
+• Instala PHP, PHP-FPM y php-mysql.\
+• php-mysql es necesario para usar _mysqli\_connect()_.
 
-#### **Verificar que PHP-FPM esté activo**
-
-```
+```bash
 sudo systemctl status php8.4-fpm
 ```
 
-#### **Ubicación del socket PHP**
+• Verifica que PHP-FPM esté corriendo.
 
-```
+```bash
 ls /run/php/
 ```
 
-Nos mostró:\
-`php8.4-fpm.sock` → este es el que debe ir en `fastcgi_pass`.
+• Aquí ves el socket (ej: `php8.4-fpm.sock`) que necesitas poner en `fastcgi_pass`.
 
 ***
 
-## **6. Pruebas PHP**
+### 6. Pruebas PHP
 
-#### **Crear archivo phpinfo()**
-
-```
+```bash
 sudo nano /var/www/camilly.com/info.php
 ```
 
-Contenido:
+• Archivo de prueba.
 
-```
+```php
 <?php phpinfo();
 ```
 
-#### **Probar**
-
-```
-curl http://localhost:8081/info.php
-```
+• Muestra la configuración de PHP desde el navegador.
 
 ***
 
-## **7. Base de Datos: MariaDB/MySQL**
+### 7. Base de datos: MariaDB/MySQL
 
-#### **Instalar MariaDB**
-
-```
+```bash
 sudo apt install mariadb-server
 ```
 
-#### **Acceder al cliente**
+• Instala MariaDB.
 
-```
+```bash
 sudo mysql
 ```
 
-#### **Crear base de datos**
+• Accede al cliente SQL.
 
-```
-CREATE DATABASE camillydb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-#### **Crear usuario**
-
-```
-CREATE USER 'camillyuser'@'localhost' IDENTIFIED BY 'Camilly';
-```
-
-#### **Dar permisos**
-
-```
-GRANT ALL PRIVILEGES ON camillydb.* TO 'camillyuser'@'localhost';
-FLUSH PRIVILEGES;
+```sql
+CREATE DATABASE camilly;
+CREATE USER 'cami'@'localhost' IDENTIFIED BY '1234';
+GRANT ALL PRIVILEGES ON camilly.* TO 'cami'@'localhost';
+USE camilly;
+CREATE TABLE usuarios (id INT PRIMARY KEY AUTO_INCREMENT, nombre VARCHAR(50));
+INSERT INTO usuarios(nombre) VALUES ('Ana');
+SELECT * FROM usuarios;
 ```
 
-#### **Usar la base**
-
-```
-USE camillydb;
-```
-
-#### **Crear tabla**
-
-```
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100),
-    email VARCHAR(100),
-    password VARCHAR(100)
-);
-```
-
-#### **Insertar datos**
-
-```
-INSERT INTO users (nombre, email, password) VALUES
-('Ivan', 'ivan@figuera', '1234'),
-('Yadir', 'Yadir@yabar', 'abcd');
-```
-
-#### **Listar**
-
-```
-SELECT * FROM users;
-```
+• Crea BD, usuario, permisos y tabla de prueba.
 
 ***
 
-## **8. Scripts PHP del proyecto**
+### 8. Scripts PHP del proyecto
 
-#### **conexion.php**
-
-```
-<?php
-$host = "localhost";
-$user = "camillyuser";
-$pass = "Camilly";
-$db   = "camillydb";
-
-$conn = mysqli_connect($host,$user,$pass,$db);
-
-if(!$conn){
-    die("Error de conexión: " . mysqli_connect_error());
-}
-
-echo "Conexión OK";
+```php
+conexion.php
+usuarios.php
+index.php
 ```
 
-#### **usuarios.php**
-
-```
-<?php
-require 'conexion.php';
-
-$result = mysqli_query($conn, "SELECT * FROM users");
-
-while($fila = mysqli_fetch_assoc($result)){
-    echo $fila['id']." - ".$fila['nombre']." - ".$fila['email']."<br>";
-}
-```
-
-#### **index.php**
-
-```
-<?php
-require 'conexion.php';
-echo "<h1>Bienvenido a Camilly</h1>";
-echo "<p>Conexión con la base de datos OK.</p>";
-```
+• Archivos principales del flujo PHP→MySQL.\
+• `conexion.php` maneja la conexión.\
+• `usuarios.php` consulta la BD.\
+• `index.php` muestra los datos en HTML.
 
 ***
 
-## **9. Logs y depuración**
+### 9. Logs y depuración
 
-#### **Ver logs del sitio**
-
-```
-sudo tail -20 /var/log/nginx/camilly.error.log
+```bash
+sudo tail -f /var/log/nginx/error.log
 ```
 
-#### **Ver errores globales**
+• Errores del sitio.
 
-```
-sudo tail -20 /var/log/nginx/error.log
+```bash
+sudo tail -f /var/log/php8.4-fpm.log
 ```
 
-#### **Ver estado de PHP-FPM**
+• Errores de PHP.
 
+```bash
+sudo systemctl status php8.4-fpm
 ```
-sudo journalctl -u php8.4-fpm -n 20
-```
+
+• Revisa que PHP-FPM no tenga fallas.
 
 ***
 
-## **10. Principales problemas que hemos resolvimos y por qué**
+### 10. Problemas comunes que resolvimos
 
-#### **Error 500**
+**Error 500**\
+• Socket PHP-FPM incorrecto.\
+• Permisos mal configurados.\
+• fastcgi\_pass mal escrito.
 
-Causado por:
-
-* socket PHP-FPM incorrecto
-* permisos incorrectos
-* fastcgi mal configurado
-
-#### **Puerto 80 en conflicto (bind() failed)**
-
-Había varios sitios escuchando en el mismo puerto sin configuración adecuada.
-
-#### **mysqli\_connect() no existía**
-
-Faltaba instalar `php-mysql`.
-
-#### **Archivos propiedad de root**
-
-PHP-FPM no podía leerlos.
+**Puerto 80 en conflicto**\
+• Dos sitios usando el mismo Perfecto. Aquí lo tienes **sin comentarios dentro del bloque**, y **los comentarios explicativos debajo**, estilo GitBook claro y limpio.
 
 ***
 
+## 🚀 NGINX + PHP + MySQL (Guía rápida)
 
+### 1. Configuración de red y acceso a la VM
+
+```bash
+ip a
+```
+
+• Muestra la IP asignada a la VM.\
+• La necesitas para probar desde navegador o curl.
+
+```bash
+sudo apt install openssh-server
+sudo systemctl enable ssh
+sudo systemctl start ssh
+```
+
+• Instala y activa SSH para conectarte remotamente desde tu ordenador.
 
 ***
+
+### 2. Instalación de Nginx
+
+```bash
+sudo apt update
+sudo apt install nginx
+```
+
+• Instala el servidor web Nginx.
+
+```bash
+sudo systemctl start nginx
+sudo systemctl status nginx
+```
+
+• Inicia el servicio y comprueba que esté activo.
+
+```bash
+curl http://localhost
+```
+
+• Si funciona, devuelve la página por defecto de Nginx.
+
+***
+
+### 3. Estructura del sitio
+
+```bash
+sudo mkdir -p /var/www/camilly.com
+```
+
+• Carpeta donde vivirá tu sitio web.
+
+```bash
+sudo chown -R www-data:www-data /var/www/camilly.com
+sudo chmod -R 755 /var/www/camilly.com
+```
+
+• Permisos correctos para que Nginx pueda leer los archivos.\
+• Si fallan los permisos → error 500.
+
+***
+
+### 4. Virtual Host
+
+```bash
+sudo cp /etc/nginx/sites-available/default \
+        /etc/nginx/sites-available/camilly.com.conf
+```
+
+• Creas una copia base del host del sitio.
+
+_(Aquí agregas dentro de ese archivo la config final que hicimos: server\_name, root, fastcgi\_pass, etc.)_
+
+```bash
+sudo ln -s /etc/nginx/sites-available/camilly.com.conf \
+           /etc/nginx/sites-enabled/
+```
+
+• Activa el sitio.
+
+```bash
+sudo nginx -t
+```
+
+• Verifica errores sintácticos.
+
+```bash
+sudo systemctl reload nginx
+```
+
+• Recarga Nginx para aplicar cambios.
+
+***
+
+### 5. Instalación de PHP-FPM
+
+```bash
+sudo apt install php php-fpm php-mysql
+```
+
+• Instala PHP, PHP-FPM y php-mysql.\
+• php-mysql es necesario para usar _mysqli\_connect()_.
+
+```bash
+sudo systemctl status php8.4-fpm
+```
+
+• Verifica que PHP-FPM esté corriendo.
+
+```bash
+ls /run/php/
+```
+
+• Aquí ves el socket (ej: `php8.4-fpm.sock`) que necesitas poner en `fastcgi_pass`.
+
+***
+
+### 6. Pruebas PHP
+
+```bash
+sudo nano /var/www/camilly.com/info.php
+```
+
+• Archivo de prueba.
+
+```php
+<?php phpinfo();
+```
+
+• Muestra la configuración de PHP desde el navegador.
+
+***
+
+### 7. Base de datos: MariaDB/MySQL
+
+```bash
+sudo apt install mariadb-server
+```
+
+• Instala MariaDB.
+
+```bash
+sudo mysql
+```
+
+• Accede al cliente SQL.
+
+```sql
+CREATE DATABASE camilly;
+CREATE USER 'cami'@'localhost' IDENTIFIED BY '1234';
+GRANT ALL PRIVILEGES ON camilly.* TO 'cami'@'localhost';
+USE camilly;
+CREATE TABLE usuarios (id INT PRIMARY KEY AUTO_INCREMENT, nombre VARCHAR(50));
+INSERT INTO usuarios(nombre) VALUES ('Ana');
+SELECT * FROM usuarios;
+```
+
+• Crea BD, usuario, permisos y tabla de prueba.
+
+***
+
+### 8. Scripts PHP del proyecto
+
+```php
+conexion.php
+usuarios.php
+index.php
+```
+
+• Archivos principales del flujo PHP→MySQL.\
+• `conexion.php` maneja la conexión.\
+• `usuarios.php` consulta la BD.\
+• `index.php` muestra los datos en HTML.
+
+***
+
+### 9. Logs y depuración
+
+```bash
+sudo tail -f /var/log/nginx/error.log
+```
+
+• Errores del sitio.
+
+```bash
+sudo tail -f /var/log/php8.4-fpm.log
+```
+
+• Errores de PHP.
+
+```bash
+sudo systemctl status php8.4-fpm
+```
+
+• Revisa que PHP-FPM no tenga fallas.
+
+***
+
+### 10. Problemas comunes que resolvimos
+
+**Error 500**\
+• Socket PHP-FPM incorrecto.\
+• Permisos mal configurados.\
+• fastcgi\_pass mal escrito.
+
+**Puerto 80 en conflicto**\
+• Dos sitios usando el mismo listen 80.
+
+**mysqli\_connect() undefined**\
+• Faltaba php-mysql.
+
+**Archivos con propietario root**\
+• PHP-FPM no podía leerlos.
 
