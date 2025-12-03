@@ -81,3 +81,4 @@
   * [IP TABL](ip-tables/ip-tabl.md)
 * [backup with rsync and tar.gz](backup-with-rsync-and-tar.gz.md)
 * [NGINX+PHP+MYSQL](nginx+php+mysql.md)
+* [EXAM](exam.md)
