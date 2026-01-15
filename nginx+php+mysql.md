@@ -1,6 +1,6 @@
 # NGINX+PHP+MYSQL
 
-Perfecto. Aquí lo tienes **sin comentarios dentro del bloque**, y **los comentarios explicativos debajo**, estilo GitBook claro y limpio.
+
 
 ***
 
