@@ -57,8 +57,7 @@ Respecto al tiempo de retención, normalmente se conservan entre 1 y 3 meses, ya
 Existen diferentes tipos de discos que pueden emplearse para realizar copias de seguridad:
 
 * Discos duros HDD (mecánicos): ofrecen gran capacidad a bajo costo. Ideales para almacenar grandes volúmenes de información.\
-  \
-
+  <br>
 * Discos SSD (estado sólido): más rápidos y resistentes, ya que no tienen partes móviles. Recomendados para copias frecuentes.
 * NAS (Network Attached Storage): sistemas de almacenamiento en red que permiten acceder a las copias desde distintos dispositivos. Se pueden configurar en RAID y automatizar copias.
 * Discos híbridos (SSHD): combinan la tecnología de HDD y SSD, logrando un equilibrio entre velocidad y capacidad.
@@ -106,8 +105,7 @@ El cifrado es clave para proteger nuestras copias de seguridad, ya que impide qu
 * Simétrico: usa la misma clave para cifrar y descifrar (más rápido, pero menos seguro si la clave se comparte).
 * Asimétrico: usa una clave pública y otra privada, ofreciendo mayor seguridad.
 
-\
-
+<br>
 
 Entre las herramientas más utilizadas están:
 
@@ -185,8 +183,7 @@ El comando tar nos permitió empaquetar todos los archivos en un único fichero 
 
 tar -czvf copia\_completa.tar.gz /ruta/de/la/carpeta
 
-\
-
+<br>
 
 Este comando crea un archivo comprimido que contiene todos los datos de la carpeta original.
 
@@ -251,8 +248,7 @@ Sin embargo, su principal desventaja es que cada ejecución requiere empaquetar 
 
 En un entorno con máquinas virtuales conectadas por red, donde los datos no son excesivos y se busca automatización y eficiencia, rsync es la herramienta más adecuada.
 
-\
-
+<br>
 
 <h2 align="center">rsync</h2>
 
@@ -270,8 +266,7 @@ Entre sus principales características destacan:
 * Puede ejecutarse automáticamente mediante tareas programadas (cron jobs).
 * Es multiplataforma y muy eficiente incluso con grandes volúmenes de datos.
 
-Por todo esto, rsync se ha convertido en una herramienta estándar para administradores de sistemas, técnicos de respaldo y entornos virtualizados, tanto en el ámbito empresarial como académico.\
-
+Por todo esto, rsync se ha convertido en una herramienta estándar para administradores de sistemas, técnicos de respaldo y entornos virtualizados, tanto en el ámbito empresarial como académico.<br>
 
 ### Opciones de rsync más importantes&#x20;
 
@@ -475,8 +470,7 @@ Esto impedía automatizar el backup con cron, ya que cron no puede introducir co
 
 Al generar una clave SSH y copiarla al servidor, puedo conectar sin contraseña y permitir que el proceso se ejecute automáticamente.
 
-\
-
+<br>
 
 ![](<.gitbook/assets/unknown (19).png>)
 
@@ -489,8 +483,7 @@ El sistema pidió la contraseña una última vez para poder copiarla, y después
 
 Hemos comprobado con el comando ls en la carpeta de destino que los archivos de copia (.tar.gz) se habían transferido correctamente al servidor remoto.
 
-\
-
+<br>
 
 ## Enlaces de referencias para dar las respuestas a lo preguntado:
 
@@ -534,4 +527,4 @@ Hemos comprobado con el comando ls en la carpeta de destino que los archivos de 
 \
 \
 \
-\
+<br>
