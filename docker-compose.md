@@ -80,3 +80,185 @@ Verificación final
 * Estado de contenedores docker ps
 * Test HTTP desde terminal curl -I [http://localhost:90](http://localhost:90)
 
+### Con mi aplicacion (paso a paso)
+
+#### 1) Descomprimir el ZIP en la carpeta del proyecto
+
+```bash
+unzip ~/Downloads/clone.zip -d ~/test-compose/LoginRegister2
+```
+
+Esto extrae el proyecto dentro del directorio que Docker Compose monta en los contenedores, de forma que Nginx pueda servir los ficheros directamente.
+
+#### 2) Comprobar que se ha extraído correctamente
+
+```bash
+ls -la ~/test-compose/LoginRegister2
+ls -la ~/test-compose/LoginRegister2/clone
+```
+
+Aquí verifico que existen los PHP principales (`index.php`, `config.php`, etc.) y las carpetas de recursos (`partials`, `img`, etc.).
+
+#### 3) Corregir la conexión a MySQL en la aplicación (evitar `localhost`)
+
+En Docker, `localhost` apunta al propio contenedor, no al contenedor de MySQL. Por eso el host debe ser el nombre del servicio en el compose (normalmente `db`).
+
+Editar el fichero:
+
+```bash
+nano ~/test-compose/LoginRegister2/clone/config.php
+```
+
+Cambiar a:
+
+```php
+$host = 'db';
+$dbname = 'CasaDelLibro';
+$username = 'root';
+$password = '1234';
+```
+
+Si también se usa el login/register fuera de `clone/`, revisar igualmente:
+
+```bash
+nano ~/test-compose/LoginRegister2/conexion.php
+```
+
+y asegurar:
+
+```php
+$servername="db";
+$username="root";
+$password="1234";
+```
+
+#### 4) Preparar importación automática de la base de datos
+
+Crear carpeta de inicialización y copiar el SQL:
+
+```bash
+mkdir -p ~/test-compose/LoginRegister2/db
+cp ~/test-compose/LoginRegister2/clone/CasaLibroClon/CasaLibroUpdated.sql ~/test-compose/LoginRegister2/db/init.sql
+ls -la ~/test-compose/LoginRegister2/db
+```
+
+#### 5) Montar el SQL en MySQL desde `docker-compose.yml`
+
+Editar el compose:
+
+```bash
+nano ~/test-compose/LoginRegister2/docker-compose.yml
+```
+
+Dentro del servicio `db:`, añadir:
+
+```yaml
+volumes:
+  - ./db:/docker-entrypoint-initdb.d
+```
+
+MySQL ejecuta automáticamente los `.sql` de esa carpeta durante la primera inicialización.
+
+#### 6) Levantar los contenedores
+
+```bash
+cd ~/test-compose/LoginRegister2
+docker compose up -d
+```
+
+Comprobar estado:
+
+```bash
+docker ps
+```
+
+#### 7) Incidencia: error “Table already exists” al ejecutar el SQL
+
+Si MySQL no arranca y en logs aparece un error tipo:\
+`ERROR 1050: Table 'Libro_Autor' already exists`
+
+Ver logs:
+
+```bash
+docker ps -a --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
+docker logs NOMBRE_DEL_MYSQL --tail 120
+```
+
+Solución rápida aplicada: editar el SQL y eliminar el `CREATE TABLE` duplicado:
+
+```bash
+nano ~/test-compose/LoginRegister2/db/init.sql
+```
+
+Reiniciar MySQL:
+
+```bash
+docker restart NOMBRE_DEL_MYSQL
+```
+
+#### 8) Verificar la base de datos en phpMyAdmin
+
+Abrir:\
+[http://localhost:8090](http://localhost:8090/)
+
+Conectar con:
+
+* Servidor: `db`
+* Usuario: `root`
+* Contraseña: `1234`
+
+Aquí confirmo que existe `CasaDelLibro` y que sus tablas están creadas.
+
+#### 9) Incidencia: “could not find driver” al abrir `/clone/index.php`
+
+Este error aparece porque la imagen estándar `php:8-fpm` no trae instalados por defecto los drivers de MySQL para PHP (`pdo_mysql` / `mysqli`).
+
+#### 10) Solución: crear una imagen PHP propia con drivers MySQL (Dockerfile + build)
+
+Crear Dockerfile:
+
+```bash
+nano ~/test-compose/LoginRegister2/Dockerfile
+```
+
+Contenido:
+
+```dockerfile
+FROM php:8-fpm
+RUN docker-php-ext-install pdo_mysql mysqli
+```
+
+Editar el servicio `app` en `docker-compose.yml` para usar `build` en lugar de `image`:
+
+```yaml
+app:
+  build: .
+```
+
+Con `build: .` Docker construye una imagen nueva usando el Dockerfile del proyecto, incluyendo los módulos necesarios.
+
+Reconstruir y levantar:
+
+```bash
+cd ~/test-compose/LoginRegister2
+docker compose down
+docker compose up -d --build
+```
+
+Comprobar que los módulos están activos:
+
+```bash
+docker exec -it NOMBRE_DEL_PHP php -m | grep -E "pdo_mysql|mysqli"
+```
+
+#### 11) Acceso final a la aplicación
+
+* Sitio principal: [http://localhost:90/](http://localhost:90/)
+* Aplicación del ZIP: [http://localhost:90/clone/index.php](http://localhost:90/clone/index.php)
+
+Para ver rápidamente todas las páginas PHP disponibles:
+
+```bash
+cd ~/test-compose/LoginRegister2
+find . -maxdepth 2 -name "*.php" | sed 's|^\./||'
+```
