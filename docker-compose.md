@@ -2,35 +2,74 @@
 
 El objetivo de esta práctica es desplegar una aplicación web completa mediante Docker Compose, separando cada componente en un servicio independiente (Nginx como servidor web, PHP-FPM como intérprete de PHP, MySQL como base de datos y phpMyAdmin como panel de administración). Con Compose se consigue un despliegue reproducible y más fácil de gestionar, ya que toda la infraestructura queda definida en un único archivo YAML.
 
+## Contenedores Docker: definición y conceptos fundamentales
+
+### ¿Qué son los contenedores Docker?
+
+Los **contenedores Docker** son entornos aislados que permiten ejecutar aplicaciones de forma **portable, reproducible y consistente**. Un contenedor incluye la aplicación junto con sus dependencias, librerías y configuración, lo que garantiza que el software se ejecute de la misma manera en distintos equipos o entornos (desarrollo, pruebas y producción).
+
+A diferencia de las máquinas virtuales, los contenedores **no incorporan un sistema operativo completo**, sino que comparten el **kernel del sistema operativo del host**. Para lograr el aislamiento y la gestión eficiente de recursos, Docker se apoya en mecanismos del sistema operativo como **namespaces** (aislamiento de procesos, red y sistema de archivos) y **cgroups** (control del uso de CPU, memoria y otros recursos).
+
+Como resultado, los contenedores suelen ser **más ligeros**, **arrancan más rápido** y **consumen menos recursos** que una virtualización basada en máquinas virtuales.
+
+### Diferencias entre contenedores Docker y LXC
+
+Docker y LXC (Linux Containers) comparten fundamentos técnicos, ya que ambos emplean aislamiento a nivel del sistema operativo mediante **namespaces** y **cgroups**. Sin embargo, su propósito y enfoque principal son distintos:
+
+* **Docker** está orientado principalmente al **empaquetado, distribución y ejecución de aplicaciones**. Utiliza imágenes versionadas, un ecosistema amplio de registros (como Docker Hub) y un flujo de trabajo centrado en automatización (build, push, pull y run), facilitando despliegues y escalabilidad.
+* **LXC** está más enfocado en **contenedores de sistema**, ofreciendo un entorno más parecido a un sistema Linux completo. Se utiliza frecuentemente como alternativa ligera a una máquina virtual cuando se desea administrar un sistema con mayor control interno (servicios, usuarios, procesos, etc.).
+
+En general, Docker se asocia con despliegues rápidos de aplicaciones, mientras que LXC se aproxima más al modelo de “sistema operativo aislado”.
+
+### Diferencia entre imagen y contenedor en Docker
+
+* **Imagen (Docker Image):** es una plantilla **inmutable** que contiene el sistema de archivos y la configuración base necesaria para ejecutar una aplicación. Se construye por capas (layers), lo que permite reutilización, control de versiones y distribución eficiente.
+* **Contenedor (Docker Container):** es una **instancia en ejecución** creada a partir de una imagen. Añade una capa de escritura propia, donde se registran cambios temporales durante su vida útil.
+
+En términos prácticos: una imagen es el “paquete preparado”, y un contenedor es el “proceso activo” generado a partir de ese paquete.
+
+### ¿Qué sucede con los datos cuando un contenedor se elimina?
+
+Los datos almacenados en la **capa de escritura** del contenedor se pierden cuando este se elimina. Esto ocurre porque la información generada dentro del contenedor es, por defecto, efímera.
+
+Para mantener datos persistentes se recomienda utilizar mecanismos externos al contenedor, como:
+
+* **Volúmenes (Docker volumes):** gestionados por Docker, diseñados para persistencia y portabilidad.
+* **Bind mounts:** carpetas del sistema host montadas dentro del contenedor, útiles cuando se necesita acceso directo a archivos del host.
+
+### Ventajas de utilizar contenedores Docker
+
+El uso de contenedores aporta ventajas clave en el desarrollo y despliegue de software:
+
+* **Portabilidad:** ejecución consistente en múltiples entornos.
+* **Aislamiento:** separación de servicios y dependencias en entornos independientes.
+* **Eficiencia:** menor consumo de recursos respecto a máquinas virtuales.
+* **Rapidez:** tiempos de arranque reducidos.
+* **Reproducibilidad:** entornos idénticos para desarrollo, test y producción.
+* **Escalabilidad:** facilita despliegues por microservicios y orquestación (por ejemplo, con Kubernetes).
+* **Automatización:** integración con pipelines CI/CD y Docker Compose para sistemas multi-servicio.
+
+### ¿Qué tipo de aplicaciones y servicios se pueden desplegar con Docker?
+
+Docker permite ejecutar una amplia variedad de aplicaciones y servicios, entre ellos:
+
+* Aplicaciones web y APIs (PHP, Node.js, Python, Java)
+* Bases de datos (MySQL, PostgreSQL, MongoDB)
+* Servidores web y reverse proxies (Nginx, Apache)
+* Herramientas de administración (phpMyAdmin)
+* Monitorización y observabilidad (Prometheus, Grafana)
+* Plataformas y servicios completos (WordPress, Nextcloud, GitLab)
+
+### Otros tipos de contenedores además de Docker
+
+Existen otras tecnologías relacionadas con contenedores y ejecución aislada de aplicaciones:
+
+* **LXC/LXD:** orientados a contenedores de sistema.
+* **Podman:** compatible con Docker, pero sin necesidad de un daemon central.
+* **containerd y CRI-O:** runtimes utilizados por Kubernetes a través de CRI.
+* **rkt:** tecnología descontinuada, pero relevante históricamente.
 
 
-#### ¿Qué son los contenedores de Docker?
-
-Los contenedores Docker son entornos aislados que ejecutan aplicaciones usando el kernel del sistema operativo del host. Incluyen el software necesario (dependencias, librerías y configuración), pero consumen menos recursos que una máquina virtual porque no necesitan un sistema operativo completo.
-
-#### ¿Qué diferencias hay entre los contenedores de Docker y los LXC?
-
-Ambos usan aislamiento a nivel de sistema (namespaces y cgroups), pero Docker está orientado a empaquetar y distribuir aplicaciones mediante imágenes versionadas y registro (Docker Hub). LXC está más orientado a “contenedores de sistema”, similares a una mini máquina Linux, gestionando un entorno más completo. En general, Docker simplifica el despliegue de aplicaciones con un flujo más automatizado (build, push, run).
-
-#### ¿Cuál es la diferencia entre una imagen y un contenedor en Docker?
-
-Una imagen es una plantilla inmutable con el sistema de archivos y la configuración base de una aplicación. Un contenedor es la instancia en ejecución creada a partir de una imagen, con una capa de escritura propia donde se generan cambios temporales mientras el contenedor existe.
-
-#### ¿Qué sucede con los datos cuando un contenedor se elimina?
-
-Los datos guardados en la capa de escritura del contenedor se pierden al eliminarlo. Para mantener datos persistentes se deben usar volúmenes (managed volumes) o bind mounts (carpetas del host montadas en el contenedor).
-
-#### ¿Cuáles son las ventajas de utilizar contenedores Docker?
-
-Permiten despliegues rápidos, portabilidad entre entornos, aislamiento entre servicios, menor consumo de recursos que máquinas virtuales y facilidad para reproducir entornos completos con Docker Compose. Además, mejoran el control de versiones y facilitan pruebas, desarrollo y despliegue.
-
-#### ¿Qué tipo de aplicaciones y servicios se pueden desplegar con Docker?
-
-Se pueden desplegar aplicaciones web (PHP, Node, Python, Java), bases de datos (MySQL, PostgreSQL), servidores web (Nginx, Apache), herramientas de administración (phpMyAdmin), servicios de red (DNS, proxy, VPN), monitorización (Prometheus, Grafana) y plataformas como WordPress, Nextcloud o GitLab.
-
-#### ¿Qué otros tipos de contenedores existen además de Docker?
-
-Existen LXC/LXD, Podman (compatible con Docker pero sin daemon), rkt (descontinuado), y tecnologías de contenedores gestionadas por Kubernetes/CRI (por ejemplo containerd y CRI-O). También existen contenedores a nivel de sistema usados en virtualización ligera.
 
 ### INCIDENCIAS EN DOCKER COMPOSE y solución aplicada
 
@@ -80,7 +119,24 @@ Verificación final
 * Estado de contenedores docker ps
 * Test HTTP desde terminal curl -I [http://localhost:90](http://localhost:90)
 
-### Con mi aplicacion (paso a paso)
+### Con mi aplicacion  (y un breve paso a paso)
+
+En esta práctica desplegué una aplicación PHP dentro de un entorno Docker Compose, utilizando una arquitectura de cuatro servicios: Nginx, PHP-FPM, MySQL y phpMyAdmin. El objetivo era ejecutar la web desde el navegador de forma estable y reproducible, sin depender de instalaciones manuales en el sistema. Para ello, descomprimí el proyecto `clone.zip` en la carpeta que se monta dentro de los contenedores y configuré Nginx para servir los ficheros correctamente. También preparé una base de datos MySQL para que la aplicación pudiera guardar y leer información. Para automatizar el proceso, importé la base de datos mediante un script SQL al iniciar MySQL. Finalmente, ajusté la imagen de PHP para garantizar compatibilidad con MySQL y verifiqué el resultado accediendo a la web y a phpMyAdmin.
+
+Incidencias (fallo y solución)
+
+* La aplicación no conectaba con MySQL usando “localhost”\
+  Al principio la conexión me fallaba porque en Docker “localhost” no apunta a la base de datos, sino al propio contenedor. Lo solucioné cambiando el host de conexión a “db”, que es el nombre del servicio MySQL dentro del docker-compose.
+* Fallo: phpMyAdmin no podía encontrar el servidor db (error de resolución DNS).\
+  Solución: comprobé que MySQL estaba levantado y que ambos servicios estaban conectados a la misma red del compose.
+* MySQL no arrancaba al importar la base de datos automáticamente\
+  Cuando MySQL intentaba ejecutar el archivo init.sql, se paraba porque una tabla ya existía (table already exists). Para resolverlo, edité el init.sql y eliminé el CREATE TABLE que estaba duplicado, de forma que la importación pudiera terminar correctamente.
+* Error “could not find driver” en páginas PHP con base de datos\
+  Me apareció el error porque la imagen de PHP que estaba usando (php:8-fpm) no traía instalados los drivers para MySQL. Lo arreglé creando un Dockerfile e indican
+* Fallo: algunos cambios no se reflejaban tras modificar archivos o configuración.\
+  Solución: reinicié los servicios o reconstruí el stack con docker compose up -d --build y verifiqué el estado con docker ps y docker logs.
+
+
 
 #### 1) Descomprimir el ZIP en la carpeta del proyecto
 
@@ -263,9 +319,3 @@ cd ~/test-compose/LoginRegister2
 find . -maxdepth 2 -name "*.php" | sed 's|^\./||'
 ```
 
-Incidencias encontradas y cómo las resolvimos
-
-1. La aplicación no conectaba con MySQL usando “localhost” Al principio la conexión fallaba porque en Docker “localhost” no apunta a la base de datos, sino al propio contenedor. Lo arreglamos cambiando el host de conexión a “db”, que es el nombre del servicio MySQL dentro del docker-compose.
-2. MySQL no arrancaba al importar la base de datos automáticamente Cuando MySQL intentaba ejecutar el archivo init.sql, se paraba porque una tabla ya existía (table already exists). Para solucionarlo, editamos el init.sql y eliminamos el CREATE TABLE que estaba duplicado, así MySQL pudo terminar la importación.
-3. Error “could not find driver” en páginas PHP con base de datos La imagen de PHP que usamos (php:8-fpm) no traía instalados los drivers para MySQL. Por eso salía el error. Lo solucionamos creando un Dockerfile propio e indicando build en el servicio PHP, para construir una imagen con pdo\_mysql y mysqli.
-4. Comprobación final del despliegue Después de corregir todo, verificamos que los contenedores estaban en ejecución con docker ps, entramos a la web en el puerto 90 y confirmamos la base de datos desde phpMyAdmin en el puerto 8090 conectando al servidor “db”.
