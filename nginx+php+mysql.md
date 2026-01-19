@@ -1,10 +1,8 @@
 # NGINX+PHP+MYSQL
 
-
-
 ***
 
-## 🚀 NGINX + PHP + MySQL (Guía rápida)
+## &#x20;NGINX + PHP + MySQL&#x20;
 
 ### 1. Configuración de red y acceso a la VM
 
@@ -215,7 +213,7 @@ sudo systemctl status php8.4-fpm
 
 ***
 
-## 🚀 NGINX + PHP + MySQL (Guía rápida)
+## NGINX + PHP + MySQL&#x20;
 
 ### 1. Configuración de red y acceso a la VM
 
@@ -429,4 +427,3 @@ sudo systemctl status php8.4-fpm
 
 **Archivos con propietario root**\
 • PHP-FPM no podía leerlos.
-

@@ -190,7 +190,7 @@ Este comando crea un archivo comprimido que contiene todos los datos de la carpe
 * Copia incremental:\
   Posteriormente, creamos copias incrementales empleando el parámetro --listed-incremental junto con un archivo .snar, que guarda el registro de los cambios entre una copia y otra. Por ejemplo:
 
-{% hint style="info" %}
+{% hint style="warning" %}
 tar --listed-incremental=backup.snar -czvf copia\_incremental.tar.gz /ruta/de/la/carpeta
 {% endhint %}
 
@@ -199,7 +199,7 @@ El archivo .snar (snapshot archive) actúa como una especie de historial. Cada v
 * Copia diferencial:\
   De manera similar, también hicimos una copia diferencial. La diferencia es que esta guarda todos los cambios desde la última copia completa, sin importar si ya hubo incrementales en medio. El comando es muy parecido:
 
-{% hint style="info" %}
+{% hint style="warning" %}
 tar --listed-incremental=backup.snar -czvf copia\_diferencial.tar.gz /ruta/de/la/carpeta
 {% endhint %}
 
