@@ -262,3 +262,10 @@ Para ver rápidamente todas las páginas PHP disponibles:
 cd ~/test-compose/LoginRegister2
 find . -maxdepth 2 -name "*.php" | sed 's|^\./||'
 ```
+
+Incidencias encontradas y cómo las resolvimos
+
+1. La aplicación no conectaba con MySQL usando “localhost” Al principio la conexión fallaba porque en Docker “localhost” no apunta a la base de datos, sino al propio contenedor. Lo arreglamos cambiando el host de conexión a “db”, que es el nombre del servicio MySQL dentro del docker-compose.
+2. MySQL no arrancaba al importar la base de datos automáticamente Cuando MySQL intentaba ejecutar el archivo init.sql, se paraba porque una tabla ya existía (table already exists). Para solucionarlo, editamos el init.sql y eliminamos el CREATE TABLE que estaba duplicado, así MySQL pudo terminar la importación.
+3. Error “could not find driver” en páginas PHP con base de datos La imagen de PHP que usamos (php:8-fpm) no traía instalados los drivers para MySQL. Por eso salía el error. Lo solucionamos creando un Dockerfile propio e indicando build en el servicio PHP, para construir una imagen con pdo\_mysql y mysqli.
+4. Comprobación final del despliegue Después de corregir todo, verificamos que los contenedores estaban en ejecución con docker ps, entramos a la web en el puerto 90 y confirmamos la base de datos desde phpMyAdmin en el puerto 8090 conectando al servidor “db”.
