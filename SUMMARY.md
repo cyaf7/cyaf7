@@ -82,3 +82,4 @@
 * [backup with rsync and tar.gz](backup-with-rsync-and-tar.gz.md)
 * [NGINX+PHP+MYSQL](nginx+php+mysql.md)
 * [Docker compose](docker-compose.md)
+* [Proxmox](proxmox.md)
