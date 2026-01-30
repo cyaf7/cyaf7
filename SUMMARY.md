@@ -83,3 +83,4 @@
 * [NGINX+PHP+MYSQL](nginx+php+mysql.md)
 * [Docker compose](docker-compose.md)
 * [Proxmox](proxmox.md)
+* [dhcp por dnsmasq](dhcp-por-dnsmasq.md)

@@ -101,6 +101,10 @@ En este entorno no se utilizó **dhclient** para la red interna. dhclient es un 
 
 Para este escenario se utilizó **dnsmasq**, que actúa como servidor DHCP y DNS ligero.
 
+{% hint style="info" %}
+apk add dnsmasq #para descargar dnsmasq em alpine linux
+{% endhint %}
+
 #### Justificación del uso de dnsmasq
 
 * Permite asignar direcciones IP a clientes.
@@ -116,21 +120,40 @@ dnsmasq es una solución habitual en routers, firewalls y laboratorios debido a 
 
 #### Configuración de dnsmasq
 
+Las configuraciones de dnsmaq pueden ser encontradas em ese website: [https://www.ochobitshacenunbyte.com/2024/11/25/dnsmasq-configuracion-de-dns-y-dhcp-en-linux/](https://www.ochobitshacenunbyte.com/2024/11/25/dnsmasq-configuracion-de-dns-y-dhcp-en-linux/)
+
 Archivo de configuración  /etc/dnsmasq.conf:
 
 {% hint style="info" %}
+
+
+interface=enps08 #Indica que dnsmasq solo escucha en la interfaz interna
+
+bind-interfaces #Fuerza a dnsmasq a enlazarse únicamente a la interfaz indicada
+
 dhcp-range=10.10.10.50,10.10.10.60,255.255.255.0,12h
 
 dhcp-host=BC:24:11:E9:9C:66,10.10.10.58
+
+dhcp-option=3, 10.10.10.10&#x20;
 {% endhint %}
 
 **Explicación de la configuración**
+
+Adding `domain-needed` blocks incomplete requests from leaving your network, such as _google_ instead of _google.com_. `bogus-priv` prevents non-routable private addresses from being forwarded out of your network. Using these is simply good netizenship.
 
 **dhcp-range** Define el rango de direcciones IP dinámicas disponibles, la máscara de red y el tiempo de concesión.
 
 **dhcp-host** Asigna una IP fija al cliente identificado por su dirección MAC, garantizando estabilidad y facilidad de diagnóstico.
 
-En este escenario no se configuraron explícitamente opciones de gateway o DNS mediante dhcp-option, ya que la red funcionaba correctamente con la configuración del sistema y el Firewall actuaba como puerta de enlace de forma implícita.
+dhcp-option=3\
+La opción 3 en DHCP corresponde al router por defecto. Indica al cliente cuál es su gateway.
+
+Se usa 10.10.10.10 porque el gateway del cliente debe estar en su misma red. El cliente no puede usar directamente una IP de la red 172.20.10.0/24 porque no pertenece a su segmento de red.
+
+{% hint style="info" %}
+rc-service dnsmasq restart
+{% endhint %}
 
 #### Configuración de red en Alpine Linux y particularidades
 
@@ -248,6 +271,8 @@ Se añadió la siguiente regla de NAT:
 
 {% hint style="info" %}
 iptables -t nat -A POSTROUTING -s 10.10.10.0/24 -o eth0 -j MASQUERADE
+
+
 {% endhint %}
 
 **Explicación de la regla**
@@ -256,7 +281,7 @@ iptables -t nat -A POSTROUTING -s 10.10.10.0/24 -o eth0 -j MASQUERADE
 * La cadena POSTROUTING aplica la regla justo antes de que el paquete salga del sistema.
 * Se especifica la red interna 10.10.10.0/24.
 * Se indica la interfaz de salida hacia Internet.
-* MASQUERADE sustituye la IP de origen por la IP actual del Firewall.
+* MASQUERADE sustituye la IP de origen (10.10.10.x) por la IP actual del Firewall (192.168.109.58).
 
 Esta configuración permite que los equipos de la red interna accedan a Internet utilizando la dirección IP del Firewall.
 
