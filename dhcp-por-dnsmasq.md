@@ -196,10 +196,14 @@ ip route get 8.8.8.8 from 10.10.10.23
 
 Captura de tráfico ICMP para ver hasta dónde llegaban los paquetes:
 
+en el server:
+
 ```bash
 sudo tcpdump -i enp0s8 icmp
 sudo tcpdump -i enp0s3 icmp
 ```
+
+en la client hacer un ping -c 3 8.8.8.8, y luego mirar que sale de respuesta en el server.
 
 Ver reglas y contadores de iptables:
 
@@ -277,14 +281,3 @@ systemctl status netfilter-persistent
 3. El servidor reenvía el tráfico desde enp0s8 a enp0s3.
 4. El servidor aplica NAT y envía el paquete a Internet.
 5. La respuesta vuelve al servidor, se deshace el NAT y se entrega al cliente.
-
-***
-
-### 9. Resultado final
-
-* DHCP funcional en red interna.
-* Routing activo entre interfaces.
-* NAT aplicado únicamente en la salida externa.
-* Firewall controlado y mínimo.
-* Configuración persistente tras reinicio.
-* Cliente con acceso completo a Internet a través del servidor.
