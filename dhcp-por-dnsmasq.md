@@ -187,6 +187,12 @@ sudo iptables -t nat -L -n -v
 
 ### 6. Comandos de diagnóstico utilizados durante la resolución de errores
 
+dnsmasq guarda leases en:
+
+```bash
+/var/lib/misc/dnsmasq.leases
+```
+
 Ver rutas desde el punto de vista del kernel:
 
 ```bash
