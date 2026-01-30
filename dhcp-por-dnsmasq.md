@@ -187,7 +187,34 @@ sudo iptables -t nat -L -n -v
 
 ### 6. Comandos de diagnóstico utilizados durante la resolución de errores
 
-dnsmasq guarda leases en:
+**Pra subir o bajar una interfaz sin dhclient:**
+
+```bash
+sudo ip link set enp0s8 up
+```
+
+Activa la interfaz de red a nivel del sistema.
+
+
+
+```bash
+sudo ip link set enp0s8 down
+```
+
+Desactiva la interfaz de red.
+
+
+
+```bash
+ip a show enp0s8
+```
+
+Muestra el estado actual de la interfaz.
+
+Nota: hacer down y luego up fuerza una nueva negociación de red cuando no existe dhclient.
+
+\
+**dnsmasq guarda leases en:**
 
 ```bash
 /var/lib/misc/dnsmasq.leases
