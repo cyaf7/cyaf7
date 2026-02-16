@@ -128,6 +128,8 @@ Este comando hace lo siguiente:
 * acepta el correo
 * lo entrega al buzón del usuario
 
+
+
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 145849.png" alt="" width="464"><figcaption></figcaption></figure>
 
 "Cannot open mailbox /var/mail/amelia: No such file or directory\
@@ -180,13 +182,19 @@ En:
 
 Lo cambiamos para **disable\_plaintext\_auth = no,** asi se permite autenticación en texto plano cuando se usa TLS. Y luego se reinicia Dovecot para asegurar que la configuración está cargada correctamente con **sudo systemctl restart dovecot.**
 
+
+
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 151345.png" alt=""><figcaption></figcaption></figure>
 
 Comprueba que Dovecot responde en el puerto IMAP y que el servicio está activo. La respuesta OK indica que el servidor IMAP acepta conexiones.
 
+
+
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 151630.png" alt=""><figcaption></figcaption></figure>
 
 Aqui se instala el servicio DNS que permitirá resolver el dominio del servidor de correo. Y se confirma que está activo con **sudo systemctl status bind9**.
+
+
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 152146.png" alt=""><figcaption></figcaption></figure>
 
@@ -208,15 +216,19 @@ Esto deja la base correcta para añadir servicios (MX, SMTP, IMAP…).
 
 Y luego un **sudo systemctl restart bind9,** para la recarga la configuración DNS y para aplicar los cambios.
 
+
+
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 152911.png" alt=""><figcaption></figcaption></figure>
 
 Aqui he visto mi error, y hecho un **sudo cp /etc/bind/db.lalal.local /var/cache/bind/db.lala.local** pues habia creado el fichero el la carpeta errada.&#x20;
 
-Con **sudo systemctl restart bind9 se r**ecarga la configuración DNS para aplicar los cambios.
+
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 153113.png" alt=""><figcaption></figcaption></figure>
 
-Comprueba que el archivo de zona no contiene errores de sintaxis.&#x20;
+Con **sudo systemctl restart bind9 se r**ecarga la configuración DNS para aplicar los cambios nuevamente. Y luego comprueba que el archivo de zona no contiene errores de sintaxis.&#x20;
+
+
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 153737.png" alt=""><figcaption></figcaption></figure>
 
@@ -228,12 +240,16 @@ Esto confirma que:
 * el servidor DNS local funciona
 * el nombre se resuelve a la IP correcta
 
+
+
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 154311.png" alt="" width="375"><figcaption></figcaption></figure>
 
 La idea aquí es clara:
 
 * el dominio `lala.local` envía correo a `email.lala.local`
 * todos los servicios apuntan al mismo servidor físico
+
+
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 154724.png" alt=""><figcaption></figcaption></figure>
 
@@ -248,15 +264,21 @@ Pero en DNS:
 * el MX apunta a un nombre válido
 * la zona cumple el estándar DNS
 
+
+
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 154802.png" alt=""><figcaption></figcaption></figure>
 
 Se comproba: que la zona es válida, el DNS está bien construido, yel correo puede depender del DNS sin problemas.
+
+
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 160205.png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 160249.png" alt="" width="375"><figcaption></figcaption></figure>
 
 MySQL se instaló para: almacenar la base de datos de Roundcube, y para gestionar usuarios, sesiones y preferencias del webmail.
+
+
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 160449.png" alt=""><figcaption></figcaption></figure>
 
@@ -267,9 +289,13 @@ Roundcube será el **cliente web (MUA)** que:
 * se conecta por IMAP a Dovecot
 * envía correos vía SMTP a Postfix
 
+
+
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 161850.png" alt=""><figcaption></figcaption></figure>
 
 Significa: que Apache está funcionando, pero **todavía no hay un alias configurado** para /roundcube. Es el comportamiento normal antes de configurar Apache.
+
+
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 162203.png" alt=""><figcaption></figcaption></figure>
 
@@ -281,6 +307,8 @@ Aquí se:
 * adapta para servir Roundcube
 * mantiene una configuración clara y separada
 
+
+
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 162420.png" alt=""><figcaption></figcaption></figure>
 
 Esto indica que:
@@ -290,17 +318,21 @@ Esto indica que:
 
 Luego: **sudo systemctl reload apache2**
 
+
+
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 162616.png" alt="" width="359"><figcaption></figcaption></figure>
 
 Este comando sigue redirecciones (-L) y muestra solo cabeceras (-I), el resultado indica 301 Moved Permanently (Apache redirige a /roundcube/), 200 OK (Roundcube responde), se crea la cookie roundcube\_sessid y Apache junto con PHP funcionan correctamente.
+
+
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 163850.png" alt=""><figcaption></figcaption></figure>
 
 #### Configuración de resolución de nombres en el cliente
 
-En la máquina cliente (`/etc/hosts`):
+En la máquina cliente (/etc/hosts): Este paso permite que el cliente resuelva el servidor sin depender del DNS y que las pruebas se centren en el correo y no en la resolución de nombres.
 
-Este paso permite que el cliente resuelva el servidor sin depender del DNS y que las pruebas se centren en el correo y no en la resolución de nombres.
+
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-15 164034.png" alt=""><figcaption></figcaption></figure>
 
@@ -322,9 +354,52 @@ Esta configuración hace que Roundcube se conecte a Dovecot por IMAP, envíe cor
 
 Esta configuración indica que Roundcube no se autentica contra SMTP, entrega el correo a Postfix local y este lo acepta por ser un envío interno, válido en entornos locales o de laboratorio.
 
-<figure><img src=".gitbook/assets/Screenshot 2026-02-15 170958.png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/Screenshot 2026-02-15 170958 (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src=".gitbook/assets/Screenshot 2026-02-15 171854.png" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/Screenshot 2026-02-15 171854 (1).png" alt="" width="375"><figcaption></figcaption></figure>
 
 Este comando captura tráfico SMTP en la interfaz loopback filtrando el puerto 25, en la salida se observan comandos como EHLO, MAIL FROM, RCPT TO y DATA en texto plano, lo que demuestra que SMTP en el puerto 25 no cifra el contenido y que cualquiera con acceso al tráfico podría leer el correo, justificando que no es seguro usar solo el puerto 25.
 
+
+
+AUTH + 587
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-15 172111.png" alt=""><figcaption></figcaption></figure>
+
+Se revisa la configuración TLS de Dovecot y se observa que existen certificados configurados, que se utilizan claves almacenadas en /etc/ssl/private y que TLS está disponible para los servicios IMAP y POP3, lo que prepara el sistema para usar IMAPS en el puerto 993 y STARTTLS sobre IMAP.
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-15 172618.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-15 172827.png" alt=""><figcaption></figcaption></figure>
+
+La configuración con smtpd\_tls\_cert\_file, smtpd\_tls\_key\_file y smtpd\_tls\_security\_level=may indica que Postfix ofrece TLS, permite al cliente usar STARTTLS y es compatible con clientes modernos como Thunderbird o Roundcube.
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-15 172958.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-15 173222.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-15 173435.png" alt="" width="360"><figcaption></figcaption></figure>
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-15 173548.png" alt="" width="263"><figcaption></figcaption></figure>
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-15 173613.png" alt="" width="256"><figcaption></figcaption></figure>
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-15 173920.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-15 174521.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-15 174721 (2).png" alt="" width="328"><figcaption></figcaption></figure>
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-15 175053.png" alt="" width="332"><figcaption></figcaption></figure>
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-15 175114.png" alt=""><figcaption></figcaption></figure>
+
+<div><figure><img src=".gitbook/assets/Screenshot 2026-02-15 175442.png" alt=""><figcaption></figcaption></figure> <figure><img src=".gitbook/assets/Screenshot 2026-02-15 175433 (1).png" alt=""><figcaption></figcaption></figure></div>
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-15 175705.png" alt=""><figcaption></figcaption></figure>
+
+
+
+outra maquina, aq empieza con 587 + auth
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-15 180458.png" alt=""><figcaption></figcaption></figure>
