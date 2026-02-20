@@ -413,3 +413,226 @@ http://aoki.lala.local/roundcube
 
 falta uma img
 
+## 9. Integración de la FASE SEGURA
+
+### (Puerto 587 + TLS + SMTP AUTH)
+
+Hasta este momento, el servidor permitía envío SMTP básico mediante el puerto 25 y acceso IMAP sin cifrado obligatorio. Sin embargo, un entorno moderno de correo electrónico requiere:
+
+* Autenticación obligatoria para el envío.
+* Separación entre tráfico de servidor (25) y tráfico de cliente (587).
+* Cifrado de extremo a extremo mediante TLS.
+* Protección contra open relay.
+
+En esta fase se transforma el servidor funcional en un servidor seguro.
+
+## 9.1 Activación del puerto 587 (Submission)
+
+Editar el archivo:
+
+```
+sudo nano /etc/postfix/master.cf
+```
+
+Agregar o descomentar:
+
+```
+submission inet n - y - - smtpd
+  -o syslog_name=postfix/submission
+  -o smtpd_tls_security_level=encrypt
+```
+
+#### Explicación breve
+
+* `submission` → habilita el puerto 587.
+* `smtpd_tls_security_level=encrypt` → obliga a usar TLS en este puerto.
+* Se separa el envío autenticado del puerto 25 tradicional.
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-18 211951.png" alt=""><figcaption></figcaption></figure>
+
+Reiniciar Postfix:
+
+```
+sudo systemctl restart postfix
+```
+
+Verificar puerto abierto:
+
+```
+ss -lntp | grep 587
+```
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-18 212036.png" alt=""><figcaption></figcaption></figure>
+
+## 10. Configuración de TLS en Postfix
+
+Instalar certificados (entorno laboratorio):
+
+```
+sudo apt install ssl-cert
+```
+
+Editar:
+
+```
+sudo nano /etc/postfix/main.cf
+```
+
+Agregar sección TLS:
+
+```
+# TLS parameters
+smtpd_tls_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+smtpd_tls_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
+smtpd_tls_security_level=may
+```
+
+* `cert_file` → certificado público del servidor.
+* `key_file` → clave privada.
+* `security_level=may` → TLS opcional en puerto 25.
+* En puerto 587 ya es obligatorio por configuración anterior.
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-18 212132.png" alt=""><figcaption></figcaption></figure>
+
+einiciar:
+
+```
+sudo systemctl restart postfix
+```
+
+***
+
+## 11. Verificación manual de TLS
+
+Probar negociación:
+
+```
+openssl s_client -starttls smtp -connect aoki.lala.local:587
+```
+
+Si aparece:
+
+```
+Verify return code: 0 (ok)
+```
+
+Significa que el certificado fue aceptado y TLS funciona correctamente.
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-18 212708.png" alt="" width="375"><figcaption></figcaption></figure>
+
+## 12. Integración SMTP AUTH (Postfix ↔ Dovecot)
+
+Ahora se habilita autenticación obligatoria.
+
+***
+
+### 4.1 Instalación de módulos SASL
+
+```
+sudo apt install libsasl2-modules sasl2-bin
+```
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-18 212806.png" alt=""><figcaption></figcaption></figure>
+
+### 13. Configuración del socket de autenticación en Dovecot
+
+Editar:
+
+```
+sudo nano /etc/dovecot/conf.d/10-master.conf
+```
+
+Dentro de `service auth`:
+
+```
+unix_listener /var/spool/postfix/private/auth {
+  mode = 0666
+  user = postfix
+  group = dovecot
+}
+```
+
+* Crea un socket UNIX.
+* Postfix delega la autenticación a Dovecot.
+* Se establece comunicación segura interna.
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-18 213053.png" alt="" width="319"><figcaption></figcaption></figure>
+
+Creación del socket de autenticación que permite a Postfix utilizar Dovecot como backend SASL.
+
+Reiniciar Dovecot:
+
+```
+sudo systemctl restart dovecot
+```
+
+### 14. Activación de SASL en Postfix
+
+Editar:
+
+```
+sudo nano /etc/postfix/main.cf
+```
+
+Agregar:
+
+```
+smtpd_sasl_auth_enable = yes
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth
+smtpd_sasl_security_options = noanonymous
+```
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-18 213413.png" alt=""><figcaption></figcaption></figure>
+
+Se habilitó explícitamente la autenticación SMTP en Postfix mediante la integración con Dovecot como backend SASL. Esta configuración permite que el servidor exija credenciales válidas antes de aceptar el envío de mensajes desde clientes.
+
+## 15. Protección contra Open Relay
+
+Un open relay es un servidor SMTP que permite el envío de correos sin autenticación a cualquier destino. Esta configuración es altamente insegura y suele ser explotada para envío de spam. En este laboratorio se implementaron restricciones para evitar que el servidor funcione como relay abierto.
+
+Configuración de restricciones SMTP para prevenir el uso indebido del servidor como open relay.
+
+Añadir en `main.cf`:
+
+```
+smtpd_sasl_local_domain = $myhostname
+
+smtpd_recipient_restrictions =
+  permit_sasl_authenticated,
+  reject_unauth_destination
+```
+
+* Permite envío solo a usuarios autenticados.
+* Impide que el servidor sea utilizado como relay abierto.
+
+## 16. Verificación en Cliente (Thunderbird)
+
+### Configuración IMAP
+
+* Servidor: aoki.lala.local
+* Puerto: 993
+* Seguridad: SSL/TLS
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-18 214322.png" alt=""><figcaption></figcaption></figure>
+
+### Configuración SMTP
+
+* Servidor: aoki.lala.local
+* Puerto: 587
+* Seguridad: STARTTLS
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-18 214351.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-18 214436.png" alt=""><figcaption></figcaption></figure>
+
+## 17. Verificación de cifrado en Wireshark
+
+En la captura se observa:
+
+* Inicio STARTTLS
+* Negociación TLSv1.3
+* Cambio de Cipher
+* Datos cifrados (Application Data)
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-18 215120.png" alt=""><figcaption></figcaption></figure>
