@@ -5,7 +5,7 @@ description: >-
   seguridad mediante TLS y autenticación SMTP.
 ---
 
-# Mail server
+# Mail server :)
 
 El objetivo de este proyecto es diseñar e implementar una infraestructura de correo electrónico funcional en un entorno local controlado. Para ello, se configuran los componentes esenciales de un sistema de mensajería: un servidor SMTP (Postfix) encargado del envío y entrega de correos, un servidor IMAP (Dovecot) responsable del acceso a los buzones, y un servidor DNS (Bind9) que permite la resolución correcta del dominio.
 
@@ -13,7 +13,62 @@ El dominio utilizado es **lala.local**, y el servidor principal es **aoki.lala.l
 
 En esta primera parte se construye la base funcional del sistema: instalación de Postfix, configuración de Maildir, creación de usuarios y verificación del envío local.
 
+## Conceptos Fundamentales del Sistema de Correo
 
+Antes de describir la configuración, es importante comprender los principales conceptos técnicos utilizados en la implementación del servidor.
+
+### SSL (Secure Sockets Layer)
+
+Protocolo criptográfico diseñado para cifrar comunicaciones en red. Actualmente está obsoleto y ha sido reemplazado por TLS, aunque el término “SSL” sigue utilizándose de manera informal.
+
+### &#x20;TLS (Transport Layer Security)
+
+Evolución segura de SSL. Permite cifrar la comunicación entre cliente y servidor, protegiendo la confidencialidad e integridad de los datos transmitidos (por ejemplo, credenciales y contenido de correos electrónicos).
+
+En este proyecto se utiliza TLS para proteger el envío SMTP en el puerto 587.
+
+### SASL (Simple Authentication and Security Layer)
+
+Mecanismo que permite añadir autenticación a protocolos como SMTP. En este laboratorio, Postfix utiliza SASL con Dovecot como backend para verificar las credenciales de los usuarios antes de permitir el envío de correos.
+
+### Socket
+
+Un socket es un punto de comunicación entre procesos. En este proyecto se utiliza un **socket UNIX** para permitir que Postfix delegue la autenticación en Dovecot de forma interna y segura dentro del sistema operativo.
+
+### Puertos utilizados en el servidor de correo
+
+Los puertos permiten identificar servicios específicos dentro del mismo servidor.
+
+| Puerto | Servicio   | Función                                                            |
+| ------ | ---------- | ------------------------------------------------------------------ |
+| 25     | SMTP       | Comunicación entre servidores de correo (servidor-servidor)        |
+| 465    | SMTPS      | SMTP con cifrado SSL/TLS implícito (método antiguo, aún soportado) |
+| 587    | Submission | Envío autenticado desde clientes con STARTTLS                      |
+| 143    | IMAP       | Acceso al buzón sin cifrado                                        |
+| 993    | IMAPS      | Acceso al buzón con cifrado SSL/TLS                                |
+
+El puerto 587 es actualmente el estándar recomendado para envío autenticado desde clientes, mientras que el puerto 465 fue utilizado históricamente para SMTP sobre SSL implícito. En este laboratorio se implementó el modelo moderno basado en STARTTLS sobre 587.
+
+### Diferencia entre 465 (SSL) y 587 (STARTTLS)
+
+Existen dos formas de cifrar SMTP:
+
+#### &#x20;Puerto 465 — SSL implícito
+
+La conexión comienza cifrada desde el inicio.\
+El canal seguro se establece automáticamente al conectarse.
+
+Cliente -> Servidor
+
+Es un método antiguo, aún soportado por compatibilidad.
+
+#### Puerto 587 — STARTTLS (modelo actual)
+
+La conexión inicia sin cifrar y luego se activa TLS mediante el comando STARTTLS.
+
+Cliente -> Conexión normal -> STARTTLS -> Canal cifrado
+
+Es el estándar moderno para envío autenticado desde clientes, y en este laboratorio se implementó STARTTLS en el puerto 587, siguiendo las recomendaciones actuales de seguridad.
 
 ## 1. Configuración de identidad del servidor
 
@@ -36,11 +91,11 @@ Configurar:
 
 #### Explicación breve
 
-* `127.0.0.1 localhost` → dirección loopback estándar.
+* `127.0.0.1 localhost` -> dirección loopback estándar.
 * `127.0.1.1 aoki.lala.local aoki`\
   Asocia el hostname del sistema al entorno local.
-* `aoki.lala.local` → nombre completo (FQDN).
-* `aoki` → alias corto.
+* `aoki.lala.local` -> nombre completo (FQDN).
+* `aoki` -> alias corto.
 
 Esto permite que el servidor se identifique correctamente a sí mismo.
 
@@ -125,10 +180,10 @@ Para comprobar que Postfix entrega correctamente en Maildir:
 echo "first message" | mail -s "1" ameliana@lala.local
 ```
 
-* `echo "first message"` → contenido del correo.
+* `echo "first message"` -> contenido del correo.
 * `|` → redirige la salida hacia el comando `mail`.
-* `mail -s "1"` → define el asunto.
-* `ameliana@lala.local` → destinatario local.
+* `mail -s "1"` -> define el asunto.
+* `ameliana@lala.local` -> destinatario local.
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-18 142339.png" alt=""><figcaption></figcaption></figure>
 
@@ -444,8 +499,8 @@ submission inet n - y - - smtpd
 
 #### Explicación breve
 
-* `submission` → habilita el puerto 587.
-* `smtpd_tls_security_level=encrypt` → obliga a usar TLS en este puerto.
+* `submission` -> habilita el puerto 587.
+* `smtpd_tls_security_level=encrypt` -> obliga a usar TLS en este puerto.
 * Se separa el envío autenticado del puerto 25 tradicional.
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-18 211951.png" alt=""><figcaption></figcaption></figure>
@@ -487,9 +542,9 @@ smtpd_tls_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
 smtpd_tls_security_level=may
 ```
 
-* `cert_file` → certificado público del servidor.
-* `key_file` → clave privada.
-* `security_level=may` → TLS opcional en puerto 25.
+* `cert_file` -> certificado público del servidor.
+* `key_file` -> clave privada.
+* `security_level=may` -> TLS opcional en puerto 25.
 * En puerto 587 ya es obligatorio por configuración anterior.
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-18 212132.png" alt=""><figcaption></figcaption></figure>
@@ -632,7 +687,6 @@ En la captura se observa:
 
 * Inicio STARTTLS
 * Negociación TLSv1.3
-* Cambio de Cipher
 * Datos cifrados (Application Data)
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-18 215120.png" alt=""><figcaption></figcaption></figure>
