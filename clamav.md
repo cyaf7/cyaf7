@@ -7,68 +7,49 @@ description: >-
 
 # ClamAV
 
-¿Qué es Postfix?
+El objetivo de esta fase del proyecto es incorporar un sistema de protección antivirus al servidor de correo previamente implementado. Para ello, se instala y configura **ClamAV**, un motor antivirus de código abierto, junto con **ClamAV-Milter**, el componente encargado de integrarse con Postfix para analizar mensajes en tiempo real.
 
-**Postfix** es un **MTA (Mail Transfer Agent)**.
+Con esta integración, el servidor de correo adquiere la capacidad de:
 
-&#x20;¿Qué significa eso?
+* Analizar automáticamente los mensajes entrantes y salientes.
+* Detectar archivos maliciosos o patrones de malware.
+* Rechazar o aceptar mensajes según la política definida.
+* Evitar la propagación de software malicioso dentro del dominio.
 
-Un MTA es el software que:
+Esta implementación añade una capa crítica de seguridad al sistema SMTP ya funcional.
 
-* Recibe correos (SMTP)
-* Decide a dónde enviarlos
-* Los entrega al buzón local o a otro servidor
+##
 
-Es el “corazón” del servidor de correo.
+## 3️. Conceptos Fundamentales del Sistema Antivirus
 
-## 2️. ¿Qué es ClamAV?
+Antes de describir la configuración técnica, es importante comprender los componentes implicados.
 
-**ClamAV** es un **motor antivirus de código abierto**.
+### ClamAV
 
-Su función es:
+ClamAV es un motor antivirus diseñado para sistemas Linux y servidores de correo. Funciona mediante el uso de firmas digitales que permiten identificar patrones conocidos de malware.
 
-* Analizar archivos
-* Compararlos contra firmas de malware conocidas
-* Detectar amenazas
+Sus componentes principales son:
 
-No es un firewall.\
-No bloquea conexiones.\
-Solo analiza contenido.
+* **clamd** -> Demonio que realiza el análisis en segundo plano.
+* **freshclam** -> Servicio encargado de actualizar las firmas de virus.
+* **clamscan** -> Herramienta manual de análisis bajo demanda.
 
-## 3️. ¿Qué es clamd?
-
-`clamd` es el **daemon** (servicio en segundo plano) de ClamAV.
-
-#### &#x20;¿Qué es un daemon?
-
-Un daemon es un proceso que:
-
-* Se ejecuta continuamente en segundo plano
-* No necesita intervención directa del usuario
-* Espera solicitudes
-
-En nuestro caso:
-
-`clamd` espera que alguien le envíe un archivo para analizar.
+ClamAV no bloquea correos por sí solo. Necesita integrarse con el servidor SMTP.
 
 ***
 
-## 4️. ¿Qué es un milter?
+## 4️. ClamAV-Milter
 
-**Milter = Mail Filter**
+Un _milter_ (Mail Filter) es un mecanismo que permite a Postfix delegar el análisis de mensajes a procesos externos.
 
-Es un mecanismo que permite a Postfix:
+ClamAV-Milter:
 
-* Enviar el mensaje a un filtro externo
-* Esperar una respuesta
-* Aceptar o rechazar el mensaje según esa respuesta
+1. Recibe el mensaje desde Postfix.
+2. Envía el contenido al demonio clamd.
+3. Recibe el resultado del análisis.
+4. Devuelve una acción a Postfix (accept o reject).
 
-En nuestro caso:
-
-Postfix -> llama al milter\
-Milter -> envía el mensaje a clamd\
-Clamd -> responde “infectado” o “limpio”\
-Milter -> le dice a Postfix qué hacer
+Esta arquitectura permite el análisis en tiempo real antes de que el correo sea entregado al buzón.
 
 ***
 
@@ -118,7 +99,7 @@ Porque:
 
 ***
 
-## 6️. ¿Qué es /run o /var/run?
+### &#x20;¿Qué es /run o /var/run?
 
 Son directorios donde el sistema guarda:
 
@@ -131,27 +112,7 @@ Son temporales y se recrean en cada arranque.
 
 ***
 
-## 7️. ¿Qué es Maildir?
-
-Maildir es un formato de buzón.
-
-En vez de guardar todos los correos en un solo archivo (mbox),\
-Maildir guarda cada mensaje como un archivo separado.
-
-Estructura:
-
-```
-Maildir/
-   ├── new/
-   ├── cur/
-   └── tmp/
-```
-
-Esto evita corrupción y mejora rendimiento.
-
-***
-
-## 8️. ¿Qué es un archivo EICAR?
+### ¿Qué es un archivo EICAR?
 
 EICAR es un estándar mundial de prueba antivirus.
 
@@ -170,7 +131,7 @@ X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
 
 ***
 
-## 9️. ¿Qué significa “milter-reject”?
+### &#x20;¿Qué significa “milter-reject”?
 
 Cuando vimos en el log:
 
@@ -189,7 +150,7 @@ No llegó al buzón.
 
 ***
 
-## ¿Qué es un log?
+### ¿Qué es un log?
 
 Un log es un archivo donde el sistema registra eventos.
 
@@ -209,7 +170,7 @@ Ahí puedes ver:
 
 ***
 
-## 1️¿Qué es chroot?&#x20;
+### ¿Qué es chroot?&#x20;
 
 Chroot es un mecanismo de aislamiento.
 
@@ -233,9 +194,9 @@ Por eso tuvimos problemas con el socket inicialmente.
 | EICAR    | Archivo prueba | Simula virus                |
 | Log      | Registro       | Guarda eventos              |
 
-## IMPLEMENTACIÓN DE CLAMAV EN POSTFIX (PASO A PASO COMPLETO)
+## IMPLEMENTACIÓN DE CLAMAV EN POSTFIX&#x20;
 
-***
+
 
 ## 1️. Objetivo
 
@@ -266,7 +227,7 @@ sudo apt install -y clamav clamav-daemon clamav-freshclam clamav-milter
 | clamav-freshclam | Actualiza firmas                      |
 | clamav-milter    | Filtro que conecta Postfix con ClamAV |
 
-***
+<figure><img src=".gitbook/assets/Screenshot 2026-02-22 at 8.35.27 pm.png" alt=""><figcaption></figcaption></figure>
 
 ## 3️. Activar servicios
 
@@ -288,7 +249,7 @@ Debe aparecer:
 active (running)
 ```
 
-***
+<figure><img src=".gitbook/assets/Screenshot 2026-02-22 at 8.38.35 pm.png" alt="" width="375"><figcaption></figcaption></figure>
 
 ## 4️. Verificar sockets del antivirus
 
@@ -301,13 +262,17 @@ Debe existir:
 * clamd.ctl
 * clamav-milter.ctl
 
+<figure><img src=".gitbook/assets/Screenshot 2026-02-22 at 8.40.26 pm.png" alt=""><figcaption></figcaption></figure>
+
 #### Qué es esto
 
-Son **sockets UNIX** → canales de comunicación interna entre procesos.
+Son **sockets UNIX** -> canales de comunicación interna entre procesos.
 
 ***
 
 ## 5️. Integrar con Postfix
+
+Se configuró Postfix para delegar el análisis de mensajes al servicio ClamAV-Milter mediante un socket UNIX. Se estableció una política fail-open (`milter_default_action = accept`) para evitar bloqueo de correo en caso de fallo del antivirus.
 
 Editar:
 
@@ -362,32 +327,47 @@ Eicar-Signature FOUND
 
 Esto prueba que el motor funciona.
 
-***
-
-#### PRUEBA 2 — Flujo Postfix (bloqueo real)
-
-Enviar con sendmail:
-
-```
-sudo sendmail -v usuario@dominio < /tmp/eicar.txt
-```
-
-Revisar log:
-
-```
-sudo tail -n 120 /var/log/mail.log
-```
-
-Debe aparecer:
-
-```
-milter-reject
-Command rejected
-```
-
-Esto prueba que el milter está interceptando.
+<figure><img src=".gitbook/assets/Screenshot 2026-02-22 at 8.45.08 pm.png" alt="" width="375"><figcaption></figcaption></figure>
 
 ***
+
+#### PRUEBA 2 —&#x20;
+
+### Prueba mediante Telnet
+
+Conectar al servidor SMTP:
+
+```
+telnet localhost 25
+```
+
+Enviar manualmente:
+
+```
+EHLO test
+MAIL FROM:<test@lala.local>
+RCPT TO:<ameliana@lala.local>
+DATA
+Subject: EICAR Test
+
+X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
+.
+QUIT
+```
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-22 at 8.51.15 pm.png" alt="" width="375"><figcaption></figcaption></figure>
+
+### Verificación en registros
+
+Ejecutar:
+
+```
+sudo journalctl -u postfix -u clamav-milter -n 50 --no-pager
+```
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-22 at 8.51.35 pm.png" alt=""><figcaption></figcaption></figure>
+
+Se realizó una prueba de envío SMTP conteniendo el patrón EICAR. La interacción registrada en el sistema confirmó que el mensaje fue analizado por ClamAV-Milter antes de su procesamiento final por Postfix.
 
 #### PRUEBA 3 — Desde Thunderbird (prueba real de usuario)
 
@@ -413,22 +393,7 @@ El envío debe:
 * Mostrar error SMTP
 * No entregarse
 
-#### Paso 4: Ver logs en servidor
 
-```
-sudo tail -f /var/log/mail.log
-```
-
-Debe verse algo como:
-
-```
-milter-reject
-Infected
-```
-
-Esto demuestra protección en entorno real.
-
-***
 
 #### &#x20;PRUEBA 4 — Verificar que NO llegó al buzón
 

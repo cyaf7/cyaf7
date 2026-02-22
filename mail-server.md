@@ -122,6 +122,23 @@ Explicación:
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-20 140758.png" alt=""><figcaption></figcaption></figure>
 
+### 1.3 Instalación real de Postfix&#x20;
+
+Se instala con:
+
+```
+sudo apt install postfix mailutils y
+```
+
+Durante la instalación se elige:
+
+**Internet Site**\
+**Dominio del sistema: lala.local**
+
+Esto define que: **Postfix funcionará como servidor SMTP autónomo**\
+**el dominio por defecto será lala.local**\
+**los correos saldrán como usuario@lala.local**
+
 ## 2. Configuración de Maildir en Postfix
 
 Postfix, por defecto, puede utilizar formato _mbox_. En este laboratorio se configuró el formato **Maildir**, que almacena cada mensaje como un archivo independiente.
@@ -147,6 +164,10 @@ mailbox_command =
   Indica que el buzón del usuario estará en `~/Maildir/`.
 * `mailbox_command =`\
   Se deja vacío para evitar el uso de comandos externos de entrega.
+
+Esto hace que: **Postfix entregue el correo en formato Maildir**\
+**cada mensaje sea un archivo independiente**\
+**no se use el formato antiguo mbox.**
 
 Reiniciar el servicio:
 
@@ -240,6 +261,22 @@ En esta fase se habilita el acceso a los buzones mediante IMAP (Dovecot), se con
 
 ***
 
+## 7.1.1 Instalación de Dovecot&#x20;
+
+Se instala con:
+
+```
+sudo apt install dovecot-imapd dovecot-pop3d
+```
+
+Esto instala:
+
+Servidor IMAP (puerto 143 / 993)\
+Servidor POP3 (puerto 110 / 995)
+
+Dovecot NO envía correos.\
+Solo permite leer los correos almacenados por Postfix.
+
 ## 7.1 Configuración de Dovecot (IMAP)
 
 Dovecot permitirá que los usuarios accedan a sus buzones almacenados en formato Maildir.
@@ -283,6 +320,11 @@ disable_plaintext_auth = no
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-18 143039.png" alt=""><figcaption></figcaption></figure>
 
+Es necesario para que: **Thunderbird pueda autenticarse correctamente**\
+**Roundcube pueda enviar usando STARTTLS.**
+
+**Sin TLS sería inseguro.**
+
 ### 7.3 Reinicio del servicio
 
 ```
@@ -312,6 +354,18 @@ Significa que IMAP está operativo.
 El DNS permitirá que el dominio `lala.local` resuelva correctamente hacia el servidor.
 
 ***
+
+## 8.1.1 Instalación completa de Bind9&#x20;
+
+Se instala con:
+
+```
+sudo apt install bind9
+```
+
+Bind9 es: **el servidor DNS autoritativo, y el encargado de resolver lala.local.**
+
+Sin el DNS: **el dominio no se resuelve, el registro MX no funciona, y los clientes no encuentran el servidor.**
 
 ### 8.1 Declaración de zona
 
@@ -363,7 +417,7 @@ pop3  IN CNAME aoki.lala.local.
 
 #### Explicación de los registros
 
-* **SOA (Start of Authority):** define autoridad y parámetros de la zona.
+* **SOA (Start of Authority):** Es el que define qué servidor es autoridad, correo del administrador, y el número de serie de la zona.
 * **NS:** servidor DNS responsable.
 * **A:** asocia nombre a IP.
 * **MX:** define el servidor de correo del dominio.
@@ -401,7 +455,32 @@ Roundcube proporciona una interfaz web para acceder al correo vía navegador.
 
 ***
 
-### 9.1 Configuración Apache
+### 9.1.1 Instalación completa de Apache + PHP&#x20;
+
+Se instala con:
+
+```
+sudo apt install apache2 php libapache2-mod-php
+```
+
+Apache es: **el servidor HTTP, y el que servirá Roundcube al navegador.**
+
+Sin Apache: **Roundcube no es accesible y solo existiría el backend SMTP/IMAP.**
+
+### 9.1.2 Instalación de MySQL&#x20;
+
+Se instala con:
+
+```
+sudo apt install mysql-server
+```
+
+MySQL sirve para: **almacenar sesiones de Roundcube, guardar preferencias de usuario, y gestionar configuraciones del webmail.**
+
+**No almacena los correos.**\
+**Los correos están en Maildir.**
+
+### 9.1.4 Configuración Apache
 
 Editar:
 
@@ -433,7 +512,26 @@ sudo systemctl reload apache2
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-18 211042.png" alt=""><figcaption></figcaption></figure>
 
-### 8.2 Configuración de Roundcube
+### 9.2  Instalación de Roundcube&#x20;
+
+Se instala con:
+
+```
+sudo apt install roundcube roundcube-mysql
+```
+
+Roundcube es:
+
+**un cliente web (MUA)**\
+**no es servidor**\
+**no entrega correos**
+
+Se conecta asi:
+
+IMAP -> Dovecot\
+SMTP -> Postfix
+
+### 9.2.1 Configuración de Roundcube
 
 Editar:
 
@@ -456,7 +554,7 @@ $config['smtp_pass'] = '';
 * `smtp_host` conecta con Postfix.
 * Usuario y contraseña vacíos en fase inicial para evitar conflictos de autenticación prematuros.
 
-### 8.3 Acceso vía navegador
+### 9.3 Acceso vía navegador
 
 Acceder a:
 
@@ -468,7 +566,7 @@ http://aoki.lala.local/roundcube
 
 falta uma img
 
-## 9. Integración de la FASE SEGURA
+## 10. Integración de la FASE SEGURA
 
 ### (Puerto 587 + TLS + SMTP AUTH)
 
@@ -481,7 +579,7 @@ Hasta este momento, el servidor permitía envío SMTP básico mediante el puerto
 
 En esta fase se transforma el servidor funcional en un servidor seguro.
 
-## 9.1 Activación del puerto 587 (Submission)
+## 10.1 Activación del puerto 587 (Submission)
 
 Editar el archivo:
 
@@ -519,6 +617,13 @@ ss -lntp | grep 587
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-18 212036.png" alt=""><figcaption></figcaption></figure>
 
+El puerto 587 es: Para envío autenticado, para clientes como Thunderbird, y usa STARTTLS.
+
+Diferencia clave:
+
+25 -> servidor-servidor\
+587 -> cliente-servidor autenticado
+
 ## 10. Configuración de TLS en Postfix
 
 Instalar certificados (entorno laboratorio):
@@ -526,6 +631,11 @@ Instalar certificados (entorno laboratorio):
 ```
 sudo apt install ssl-cert
 ```
+
+Esto instala automáticamente:
+
+* `/etc/ssl/certs/ssl-cert-snakeoil.pem`
+* `/etc/ssl/private/ssl-cert-snakeoil.key`
 
 Editar:
 
@@ -549,13 +659,33 @@ smtpd_tls_security_level=may
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-18 212132.png" alt=""><figcaption></figcaption></figure>
 
-einiciar:
+reiniciar:
 
 ```
 sudo systemctl restart postfix
 ```
 
 ***
+
+### opcion 2:&#x20;
+
+### Generación manual de certificado autofirmado
+
+También es posible generar un certificado propio con OpenSSL:
+
+```
+sudo openssl req -new -x509 -days 365 -nodes \
+-out /etc/ssl/certs/mail.pem \
+-keyout /etc/ssl/private/mail.key
+```
+
+Durante la creación se solicitarán datos como:
+
+* Country
+* Organization
+* Common Name (aoki.lala.local)
+
+Es importante que el **Common Name coincida con el FQDN del servidor**.
 
 ## 11. Verificación manual de TLS
 
