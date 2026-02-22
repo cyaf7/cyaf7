@@ -793,6 +793,67 @@ smtpd_recipient_restrictions =
 
 ## 16. Verificación en Cliente (Thunderbird)
 
+## Configuración de red en la máquina cliente
+
+Para que el cliente (por ejemplo Thunderbird) pueda conectarse al servidor de correo, deben cumplirse dos condiciones:
+
+### 1. Mismo rango de red
+
+La máquina cliente debe estar en la misma red que el servidor.
+
+Ejemplo:
+
+Servidor → 172.20.10.3\
+Cliente → 172.20.10.20
+
+Ambos deben pertenecer a la red 172.20.10.0/24.
+
+Se puede comprobar con:
+
+```
+ping 172.20.10.3
+```
+
+Si hay respuesta sin pérdida de paquetes, existe conectividad.
+
+***
+
+### 2. Uso del mismo servidor DNS
+
+El cliente debe usar como DNS la IP del servidor Bind9:
+
+172.20.10.3
+
+Esto es necesario porque el dominio lala.local es interno y no existe en Internet.
+
+Se puede verificar con:
+
+```
+dig aoki.lala.local
+```
+
+Si responde con 172.20.10.3, la resolución funciona correctamente.
+
+***
+
+### Alternativa en laboratorio
+
+Si no se configura el DNS en el cliente, se puede añadir en:
+
+```
+sudo nano /etc/hosts
+```
+
+Y agregar:
+
+```
+172.20.10.3 aoki.lala.local
+```
+
+Esto permite resolver el nombre manualmente.
+
+Sin estar en la misma red y sin usar el DNS correcto, el cliente no podrá conectarse al servidor aunque este esté bien configurado.
+
 ### Configuración IMAP
 
 * Servidor: aoki.lala.local

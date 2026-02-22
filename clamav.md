@@ -355,8 +355,6 @@ X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
 QUIT
 ```
 
-<figure><img src=".gitbook/assets/Screenshot 2026-02-22 at 8.51.15 pm.png" alt="" width="375"><figcaption></figcaption></figure>
-
 ### Verificación en registros
 
 Ejecutar:
@@ -364,8 +362,6 @@ Ejecutar:
 ```
 sudo journalctl -u postfix -u clamav-milter -n 50 --no-pager
 ```
-
-<figure><img src=".gitbook/assets/Screenshot 2026-02-22 at 8.51.35 pm.png" alt=""><figcaption></figcaption></figure>
 
 Se realizó una prueba de envío SMTP conteniendo el patrón EICAR. La interacción registrada en el sistema confirmó que el mensaje fue analizado por ClamAV-Milter antes de su procesamiento final por Postfix.
 
