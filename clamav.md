@@ -3,6 +3,7 @@ description: >-
   Se implementó ClamAV como sistema antivirus integrado en Postfix mediante el
   mecanismo Milter, permitiendo analizar los correos antes de su entrega. El
   objetivo es detectar y bloquear contenido malo.
+icon: head-side-mask
 ---
 
 # ClamAV
@@ -18,13 +19,11 @@ Con esta integración, el servidor de correo adquiere la capacidad de:
 
 Esta implementación añade una capa crítica de seguridad al sistema SMTP ya funcional.
 
-##
-
-## 3️. Conceptos Fundamentales del Sistema Antivirus
+### Conceptos Fundamentales del Sistema Antivirus
 
 Antes de describir la configuración técnica, es importante comprender los componentes implicados.
 
-### ClamAV
+## ClamAV
 
 ClamAV es un motor antivirus diseñado para sistemas Linux y servidores de correo. Funciona mediante el uso de firmas digitales que permiten identificar patrones conocidos de malware.
 
@@ -38,7 +37,7 @@ ClamAV no bloquea correos por sí solo. Necesita integrarse con el servidor SMTP
 
 ***
 
-## 4️. ClamAV-Milter
+### ClamAV-Milter
 
 Un _milter_ (Mail Filter) es un mecanismo que permite a Postfix delegar el análisis de mensajes a procesos externos.
 
@@ -53,7 +52,7 @@ Esta arquitectura permite el análisis en tiempo real antes de que el correo sea
 
 ***
 
-## 5️. ¿Qué es un socket?
+### Qué es un socket?
 
 Este es uno de los conceptos más importantes.
 
@@ -368,9 +367,9 @@ sudo postconf -n | grep smtpd_milters
 
 ***
 
-### 6️. Cómo PROBAR que funciona
+### 6️. Probando funcionamiento:
 
-#### PRUEBA 1 — Motor antivirus
+#### &#x20;Motor antivirus
 
 Crear archivo EICAR:
 
@@ -393,10 +392,6 @@ Eicar-Signature FOUND
 Esto prueba que el motor funciona.
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-23 134945.png" alt="" width="375"><figcaption></figcaption></figure>
-
-***
-
-#### PRUEBA 2 —&#x20;
 
 ### Prueba mediante Telnet
 
@@ -437,7 +432,7 @@ Se realizó una prueba de envío SMTP conteniendo el patrón EICAR. La interacci
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-23 142810 (1).png" alt=""><figcaption></figcaption></figure>
 
-#### &#x20;PRUEBA 3 — Verificar que NO llegó al buzón
+#### &#x20;Verificar que NO llegó al buzón
 
 ```
 ls /home/usuario/Maildir/new
@@ -445,8 +440,12 @@ ls /home/usuario/Maildir/new
 
 El mensaje no debe existir.
 
-#### PRUEBA 4 — Verificar sockets activos
+#### Verificar sockets activos
 
 ```
 test -S /var/run/clamav/clamav-milter.ctl && echo OK
 ```
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-23 170949.png" alt=""><figcaption></figcaption></figure>
+
+Los headers `X-Virus-Scanned` y `X-Virus-Status: Clean` confirman que ClamAV analizó el mensaje durante la sesión SMTP y no detectó malware. Esto demuestra que el milter está activo e integrado correctamente con Postfix.

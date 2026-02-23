@@ -15,7 +15,7 @@ What's the use of it?
 
 To install just go to their official webpage [https://www.chiark.greenend.org.uk/\~sgtatham/putty/latest.html](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
 
-<figure><img src="../.gitbook/assets/image.png" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (2).png" alt="" width="375"><figcaption></figcaption></figure>
 
 **SSH for Windows 10/11 and for MacOS:**
 
