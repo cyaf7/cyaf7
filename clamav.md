@@ -89,7 +89,7 @@ socket
 
 ***
 
-### ¿Por qué usar socket y no puerto TCP?
+### Por qué usar socket y no puerto TCP?
 
 Porque:
 
@@ -99,7 +99,7 @@ Porque:
 
 ***
 
-### &#x20;¿Qué es /run o /var/run?
+### &#x20;Qué es /run o /var/run?
 
 Son directorios donde el sistema guarda:
 
@@ -112,7 +112,7 @@ Son temporales y se recrean en cada arranque.
 
 ***
 
-### ¿Qué es un archivo EICAR?
+### Qué es un archivo EICAR?
 
 EICAR es un estándar mundial de prueba antivirus.
 
@@ -131,7 +131,7 @@ X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
 
 ***
 
-### &#x20;¿Qué significa “milter-reject”?
+### &#x20;Qué significa “milter-reject”?
 
 Cuando vimos en el log:
 
@@ -150,7 +150,7 @@ No llegó al buzón.
 
 ***
 
-### ¿Qué es un log?
+### Qué es un log?
 
 Un log es un archivo donde el sistema registra eventos.
 
@@ -170,7 +170,7 @@ Ahí puedes ver:
 
 ***
 
-### ¿Qué es chroot?&#x20;
+### Qué es chroot?&#x20;
 
 Chroot es un mecanismo de aislamiento.
 
@@ -180,6 +180,16 @@ como si fuera su “mini sistema”.
 Por eso tuvimos problemas con el socket inicialmente.
 
 ***
+
+### Qué son los Milters?
+
+**Milters (Mail Filters)** son procesos externos que se integran con el servidor de correo (Postfix) para analizar o modificar un mensaje durante la sesión SMTP, antes de que sea aceptado definitivamente.
+
+En la práctica:
+
+Postfix recibe el correo -> lo envía al milter -> el milter lo analiza (antivirus, firma DKIM, antispam, etc.) -> devuelve una decisión (aceptar, rechazar o modificar) -> Postfix actúa según esa respuesta.
+
+Sirven para añadir capas de seguridad y control en tiempo real sobre los correos entrantes y salientes.
 
 ## &#x20;Resumen conceptual completo
 
@@ -229,7 +239,7 @@ sudo apt install -y clamav clamav-daemon clamav-freshclam clamav-milter
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-22 at 8.35.27 pm.png" alt=""><figcaption></figcaption></figure>
 
-## 3️. Activar servicios
+### 3️. Activar servicios
 
 ```
 sudo systemctl enable --now clamav-daemon
@@ -251,24 +261,79 @@ active (running)
 
 <figure><img src=".gitbook/assets/Screenshot 2026-02-22 at 8.38.35 pm.png" alt="" width="375"><figcaption></figcaption></figure>
 
-## 4️. Verificar sockets del antivirus
+
+
+### Verificación del Motor (clamd)
+
+Logs reales observados:
+
+* Base de datos cargada correctamente.
+* Más de 3.6 millones de firmas.
+* SelfCheck OK.
+* Socket UNIX recibido desde systemd.
+
+Directorio de firmas:
+
+```
+/var/lib/clamav/
+```
+
+Archivo de log principal:
+
+```
+/var/log/clamav/clamav.log
+```
+
+***
+
+### &#x20;Configuración de ClamAV-Milter
+
+Archivo:
+
+```
+/etc/clamav/clamav-milter.conf
+```
+
+Configuración utilizada:
+
+```
+MilterSocket /var/run/clamav/clamav-milter.ctl
+MilterSocketGroup clamav
+MilterSocketMode 666
+```
+
+***
+
+**MilterSocket ->** Ruta del socket UNIX que usará Postfix para comunicarse con el milter.
+
+**MilterSocketGroup ->** Grupo propietario del socket.
+
+**MilterSocketMode 666 ->** Permisos amplios en laboratorio para evitar problemas de acceso. En producción se recomienda 660.
+
+### Verificación del Socket
+
+Después de reiniciar:
+
+```
+sudo systemctl restart clamav-daemon
+sudo systemctl restart clamav-milter
+```
+
+Se verifica:
 
 ```
 ls -la /var/run/clamav/
 ```
 
-Debe existir:
+Se observa:
 
-* clamd.ctl
 * clamav-milter.ctl
+* clamav-milter.pid
+* clamd.ctl
 
-<figure><img src=".gitbook/assets/Screenshot 2026-02-22 at 8.40.26 pm.png" alt=""><figcaption></figcaption></figure>
+Esto confirmó que el milter estaba activo.
 
-#### Qué es esto
-
-Son **sockets UNIX** -> canales de comunicación interna entre procesos.
-
-***
+<figure><img src=".gitbook/assets/Screenshot 2026-02-23 140658.png" alt=""><figcaption></figcaption></figure>
 
 ## 5️. Integrar con Postfix
 
@@ -327,7 +392,7 @@ Eicar-Signature FOUND
 
 Esto prueba que el motor funciona.
 
-<figure><img src=".gitbook/assets/Screenshot 2026-02-22 at 8.45.08 pm.png" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/Screenshot 2026-02-23 134945.png" alt="" width="375"><figcaption></figcaption></figure>
 
 ***
 
@@ -343,17 +408,16 @@ telnet localhost 25
 
 Enviar manualmente:
 
-```
-EHLO test
-MAIL FROM:<test@lala.local>
-RCPT TO:<ameliana@lala.local>
+<pre><code>EHLO test
+MAIL FROM:&#x3C;test@lala.local>
+RCPT TO:&#x3C;ameliana@lala.local>
 DATA
 Subject: EICAR Test
 
-X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
-.
+<strong>X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
+</strong>.
 QUIT
-```
+</code></pre>
 
 ### Verificación en registros
 
@@ -361,37 +425,19 @@ Ejecutar:
 
 ```
 sudo journalctl -u postfix -u clamav-milter -n 50 --no-pager
+
+o 
+
+sudo tail -n 80 /var/log/mail.log | grep -Ei "clamav|milter|infect|eicar"
 ```
 
 Se realizó una prueba de envío SMTP conteniendo el patrón EICAR. La interacción registrada en el sistema confirmó que el mensaje fue analizado por ClamAV-Milter antes de su procesamiento final por Postfix.
 
-#### PRUEBA 3 — Desde Thunderbird (prueba real de usuario)
+<figure><img src=".gitbook/assets/Screenshot 2026-02-23 142752.png" alt="" width="375"><figcaption></figcaption></figure>
 
-#### Paso 1: Crear archivo eicar.txt en tu PC
+<figure><img src=".gitbook/assets/Screenshot 2026-02-23 142810 (1).png" alt=""><figcaption></figcaption></figure>
 
-Contenido exacto:
-
-```
-X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
-```
-
-#### Paso 2: Adjuntarlo en Thunderbird
-
-* Crear nuevo correo
-* Adjuntar eicar.txt
-* Enviar al servidor
-
-#### Paso 3: Resultado esperado
-
-El envío debe:
-
-* Fallar
-* Mostrar error SMTP
-* No entregarse
-
-
-
-#### &#x20;PRUEBA 4 — Verificar que NO llegó al buzón
+#### &#x20;PRUEBA 3 — Verificar que NO llegó al buzón
 
 ```
 ls /home/usuario/Maildir/new
@@ -399,9 +445,7 @@ ls /home/usuario/Maildir/new
 
 El mensaje no debe existir.
 
-***
-
-#### PRUEBA 5 — Verificar sockets activos
+#### PRUEBA 4 — Verificar sockets activos
 
 ```
 test -S /var/run/clamav/clamav-milter.ctl && echo OK
