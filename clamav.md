@@ -353,7 +353,11 @@ milter_default_action = accept
 milter_protocol = 6
 ```
 
-Reiniciar:
+Y luego en master.cf:
+
+<figure><img src=".gitbook/assets/Screenshot 2026-02-23 174530.png" alt=""><figcaption></figcaption></figure>
+
+Y después reiniciar:
 
 ```
 sudo systemctl restart postfix
