@@ -92,3 +92,11 @@
 * [IMPLEMENTACIÓN DE SPF, DKIM Y DMARC](implementacion-de-spf-dkim-y-dmarc.md)
 * [Implementación de Rspamd en servidor Postfix](implementacion-de-rspamd-en-servidor-postfix.md)
 * [Servidor de mensajería](servidor-de-mensajeria.md)
+
+## Group 1
+
+* [Page 1](group-1/page-1.md)
+
+***
+
+* [Salas de Chat (MUC) en ejabberd](salas-de-chat-muc-en-ejabberd.md)

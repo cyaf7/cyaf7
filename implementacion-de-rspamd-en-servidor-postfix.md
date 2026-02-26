@@ -8,6 +8,10 @@ El entorno ya contaba con autenticación SPF, DKIM y DMARC correctamente configu
 
 La integración se realizó en modo milter, permitiendo que cada mensaje SMTP recibido fuese analizado en tiempo real antes de su entrega final.
 
+### Que es Rspamd?
+
+Rspamd analiza los correos que llegan a un servidor y decide si son spam usando reglas y un sistema de puntuación. Examina el contenido, la reputación del remitente y elementos como firmas digitales (DKIM). En lugar de solo bloquear o permitir, le da puntos al mensaje: si parece sospechoso suma puntos, y si parece legítimo los resta. Cuando se usa junto a Postfix (que es el servidor que recibe y envía los correos), Rspamd actúa como el “filtro de seguridad” que revisa los emails antes de que lleguen al usuario.
+
 ***
 
 ## 2. Requisitos Previos (Infraestructura ya instalada)
