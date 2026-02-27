@@ -198,15 +198,37 @@ Resultado: ejabberd inició usando certificados locales auto-firmados (válido p
 
 ### 9. Control del servicio y validación
 
-Se utilizaron comandos de administración:
+Como ejabberd fue instalado como servicio del sistema, se gestiona con `systemctl`.
 
-* `ejabberdctl start`
-* `ejabberdctl restart`
-* `ejabberdctl status`
+Reiniciar el servicio:
 
-Y en caso de fallo:
+```bash
+sudo systemctl restart ejabberd
+```
 
-* revisión de `/opt/ejabberd/logs/`
+Iniciar el servicio:
+
+```bash
+sudo systemctl start ejabberd
+```
+
+Comprobar el estado:
+
+```bash
+sudo systemctl status ejabberd
+```
+
+***
+
+### Diagnóstico en caso de fallo
+
+Si el servicio no inicia correctamente, revisar el log principal:
+
+```bash
+sudo tail -n 50 /opt/ejabberd/logs/ejabberd.log
+```
+
+Ahí se detectan errores de configuración, problemas de certificados o fallos en módulos.
 
 ***
 
