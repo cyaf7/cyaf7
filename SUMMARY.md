@@ -91,12 +91,6 @@
 * [Control de envío y recepción externa en entorno empresarial](control-de-envio-y-recepcion-externa-en-entorno-empresarial.md)
 * [IMPLEMENTACIÓN DE SPF, DKIM Y DMARC](implementacion-de-spf-dkim-y-dmarc.md)
 * [Implementación de Rspamd en servidor Postfix](implementacion-de-rspamd-en-servidor-postfix.md)
-* [Servidor de mensajería](servidor-de-mensajeria.md)
-
-## Group 1
-
-* [Page 1](group-1/page-1.md)
-
-***
-
-* [Salas de Chat (MUC) en ejabberd](salas-de-chat-muc-en-ejabberd.md)
+* [Servidor de mensajería](servidor-de-mensajeria/README.md)
+  * [Salas de Chat (MUC) en ejabberd](servidor-de-mensajeria/salas-de-chat-muc-en-ejabberd.md)
+  * [Gajim -> HTTP Upload](servidor-de-mensajeria/gajim-greater-than-http-upload.md)
