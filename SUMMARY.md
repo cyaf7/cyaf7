@@ -95,3 +95,4 @@
   * [Salas de Chat (MUC) en ejabberd](servidor-de-mensajeria/salas-de-chat-muc-en-ejabberd.md)
   * [Gajim -> HTTP Upload](servidor-de-mensajeria/gajim-greater-than-http-upload.md)
   * [Error principal con Gajim](servidor-de-mensajeria/error-principal-con-gajim.md)
+  * [Mattermost](servidor-de-mensajeria/mattermost.md)
