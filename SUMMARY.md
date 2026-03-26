@@ -97,4 +97,5 @@
   * [Error principal con Gajim](servidor-de-mensajeria/error-principal-con-gajim.md)
   * [Mattermost](servidor-de-mensajeria/mattermost.md)
 * [Proyeto](proyeto/README.md)
+  * [SPOTLY -  Infraestructura](proyeto/spotly-infraestructura.md)
   * [Microcloud](proyeto/microcloud.md)
