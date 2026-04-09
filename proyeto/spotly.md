@@ -466,16 +466,44 @@ WireGuard es el protocolo VPN que se implementará en OPNsense como solución de
 | MQTT                    | 1883/TCP   | Protocolo ligero de mensajería IoT utilizado por el sensor ESP32 para enviar eventos de detección al endpoint publico.                    |
 | rsync / SSH             | 22/TCP     | Transferencia eficiente de datos para el backup programado. Solo activo durante la ventana horaria nocturna.                              |
 
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-<br>
+### 12. Acceso inicial a la interfaz de OPNsense
+
+Para acceder a la interfaz gráfica de administración de OPNsense fue necesario asignar manualmente una dirección IP en la máquina de gestión dentro del rango de la red LAN del firewall, concretamente 192.168.1.5, con gateway 192.168.1.1. Una vez establecida esta conectividad básica, se accedió a la interfaz web desde el navegador en https://192.168.1.1. OPNsense utiliza un certificado SSL autofirmado, por lo que es necesario aceptar la advertencia del navegador para continuar.
+
+Durante este proceso se identificó que la red LAN del firewall estaba asociada a la VLAN 1, que es la VLAN por defecto en el switch HP 1810-24G. Por tanto, el puerto del switch al que se conectaba la máquina de gestion debia estar configurado como puerto de acceso (Untagged) dentro de dicha VLAN 1. Esto es imprescindible para dispositivos que no gestionan VLANs de forma nativa, como los equipos con Windows utilizados durante la fase de configuración.
+
+#### 12.1 Adaptación del puerto de management para VLAN 20
+
+La VLAN 20 fue definida como red de management, destinada al acceso SSH a los nodos y a la ejecución de playbooks de Ansible. Durante la configuración se detectó que el puerto del switch asignado a la maquina de gestion habia sido configurado inicialmente como Tagged en la VLAN 20. Esto impedía la comunicación, ya que los sistemas Windows no gestionan el etiquetado 802.1Q de forma nativa sin configuraciones adicionales específicas, a diferencia de los nodos Ubuntu, que disponen de subinterfaces VLAN configuradas mediante Netplan.
+
+Como solución, se reconfiguró ese puerto como Untagged en la VLAN 20, eliminando su pertenencia a la VLAN 1. Con este cambio, la máquina obtuvo conectividad dentro del rango 192.168.20.x y fue posible establecer conexión SSH con los nodos del clúster.
+
+Fuente: IEEE 802.1Q-2018, Bridges and Bridged Networks --- https://standards.ieee.org/ieee/802.1Q
+
+#### 12.2  Configuración de NAT de salida
+
+Una vez establecida la conectividad en las VLANs, se verifico el estado del NAT en OPNsense desde Firewall > NAT > Outbound. El modo activo era Automatic outbound NAT rule generation, que genera automáticamente reglas de traducción de direcciones para las subredes conocidas por el sistema. Sin embargo, se añadió una regla manual explícita para la VLAN 10 (cloud) con el objetivo de garantizar cobertura completa:
+
+* Interface: WAN
+* Protocol: any
+* Source: 192.168.10.0/24
+* Destination: any
+* Translation: Interface address
+
+Esta regla permite que el tráfico originado en los nodos del cluster MicroCloud salga a internet con la IP de la interfaz WAN como origen visible. La VLAN 50 (OVN uplink) no requiere NAT ya que no tiene dirección IP asignada y es gestionada directamente por MicroOVN.
+
+#### 12.3 Reglas de firewall por interfaz VLAN
+
+OPNsense aplica una politica de denegacion implicita en todas las interfaces OPT, lo que significa que aunque el routing y el NAT esten correctamente configurados, el trafico es descartado por defecto si no existe una regla de paso explicita. Este comportamiento fue identificado durante las pruebas de conectividad cuando los pings hacia 8.8.8.8 no obtenian respuesta pese a que la configuracion de red era correcta.
+
+Para resolver esto, se crearon reglas de paso en cada interfaz VLAN desde Firewall > Rules > \[interfaz]. La configuración aplicada en cada caso fue idéntica en estructura: accion Pass, direction in, protocolo any, origen la red de la propia interfaz (OPT net) y destino any. Las reglas se aplicaron sobre OPT1 (VLAN 10) y OPT2 (VLAN 20). Las reglas de VLAN 30 (DMZ) y VLAN 40 (backup con ventana horaria programada) se configuran en una fase posterior del proyecto junto con Firewall Schedules.
+
+Es importante tener en cuenta que las reglas de OPNsense se evaluan por orden de primera coincidencia: la primera regla que coincide con un paquete se aplica y el resto se ignora. Por ello, el orden de las reglas tiene impacto directo en el comportamiento del firewall.
+
+#### 12.4 Validacion de conectividad con internet
+
+Tras aplicar la configuración de NAT y las reglas de firewall, se realizaron pruebas de conectividad desde los nodos ejecutando ping hacia 8.8.8.8 y hacia google.com. Los resultados fueron satisfactorios en todos los nodos, confirmando que el trafico seguia el flujo esperado: los nodos envian paquetes hacia el gateway de su VLAN en el firewall, OPNsense permite el trafico mediante las reglas configuradas, aplica la traduccion de direcciones NAT y reenvfa el trafico hacia la WAN con conexion a internet de la red del centro educativo.
 
 <br>
+
+<figure><img src="../.gitbook/assets/Screenshot 2026-04-09 at 3.16.02 pm.png" alt=""><figcaption></figcaption></figure>
