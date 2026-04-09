@@ -1,6 +1,6 @@
 # Spotly
 
-## Descripcion general del proyecto
+## 1.Descripcion general del proyecto
 
 Spotly es una plataforma de aparcamiento inteligente diseñada para mostrar en tiempo real el estado de las plazas de aparcamiento en la vía pública. El sistema integra sensores IoT, cámaras de visión artificial con detección mediante YOLO y OpenCV, una infraestructura cloud privada basada en MicroCloud y una aplicación móvil que permite a los usuarios conocer la disponibilidad de plazas antes de llegar.
 
