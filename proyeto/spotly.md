@@ -37,10 +37,9 @@ Para acceder a la interfaz web del switch, se configura manualmente una IP en el
 
 El adaptador Realtek RTL8153 es especialmente relevante en este proyecto porque el ordenador destinado a firewall dispone de una unica NIC integrada. Para que OPNsense pueda actuar como router entre la red de la escuela (WAN) y la red interna (LAN hacia el switch), necesita obligatoriamente dos interfaces fisicas separadas. El adaptador USB Gigabit resuelve esta limitacion de hardware sin necesidad de instalar una tarjeta PCIe adicional.
 
-\
-3\. Sistemas operativos e instalacion
+### 3. Sistemas operativos e instalacion
 
-### 3.1 Ubuntu Server 22.04.5 LTS en los nodos
+#### 3.1 Ubuntu Server 22.04.5 LTS en los nodos
 
 Los tres nodos ejecutan Ubuntu Server 22.04.5 LTS, versión de soporte extendido mantenida por Canonical. Se eligió esta versión porque es la recomendada por la documentación oficial de MicroCloud para entornos de producción. La instalación se realizó arrancando cada máquina desde un pendrive USB creado con Balena Etcher, herramienta de escritura de imágenes ISO multiplataforma. Durante la instalación se selecciono la opcion de servidor minimo sin entorno grafico, con el servidor SSH habilitado desde el primer arranque.
 
