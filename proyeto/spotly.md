@@ -128,13 +128,13 @@ La principal ventaja de seguridad es que el tráfico entre VLANs distintas no pu
 \
 6.2 Tabla de VLANs del sistema
 
-| **ID** | **Nombre** | **Subred**      | **Proposito**                                                                                                                                                  | **Miembros**                  |
-| ------ | ---------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| 10     | cloud      | 192.168.10.0/24 | Red intra-cluster MicroCloud. Los nodos la usan para comunicarse entre si y para la inicializacion del cluster.                                                | Node1, Node2, Node3           |
-| 20     | mgmt       | 192.168.20.0/24 | Red de administracion. Acceso SSH a los nodos y acceso remoto via VPN desde el exterior.                                                                       | Node1, Node2, Node3, Admin PC |
-| 30     | dmz        | 192.168.30.0/24 | Zona desmilitarizada. Aqui se ubica el reverse proxy Traefik que recibe el trafico publico de internet.                                                        | VM dmz-receiver               |
-| 40     | backup     | 192.168.40.0/24 | Red de backup. El servidor de backup tiene acceso temporal a las otras VLANs unicamente durante la ventana horaria nocturna programada.                        | Backup PC (192.168.40.10)     |
-| 50     | ovn-uplink | Sin IP          | Red de enlace para MicroOVN. No tiene IP asignada porque es gestionada directamente por MicroCloud para conectar las redes virtuales internas con el exterior. | Node1, Node2, Node3           |
+| **ID** | **Nombre** | **Subred**      | **Proposito**                                                                                                                                                               | **Miembros**                  |
+| ------ | ---------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| 10     | cloud      | 192.168.10.0/24 | Red intra-cluster MicroCloud. Los nodos la usan para comunicarse entre si y para la inicializacion del cluster.                                                             | Node1, Node2, Node3           |
+| 20     | mgmt       | 192.168.20.0/24 | Red de administracion. Acceso SSH a los nodos y acceso remoto via VPN desde el exterior.                                                                                    | Node1, Node2, Node3, Admin PC |
+| 30     | dmz        | 192.168.30.0/24 | Zona desmilitarizada. Aqui se ubica el reverse proxy Traefik que recibe el trafico publico de internet.                                                                     | VM dmz-receiver               |
+| 40     | backup     | 192.168.40.0/24 | Red de backup. El servidor de backup tiene acceso temporal a las otras VLANs unicamente durante la ventana horaria nocturna programada.                                     | Backup PC (192.168.40.10)     |
+| 50     | ovn-uplink | 192.168.50.0/24 | Red de enlace para MicroOVN. No tiene IP asignada en los nodos porque es gestionada directamente por MicroCloud para conectar las redes virtuales internas con el exterior. | Node1, Node2, Node3           |
 
 #### 6.3 Cómo funciona el trafico entre VLANs
 
