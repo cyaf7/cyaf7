@@ -106,3 +106,4 @@
 * [Proyeto](proyeto/README.md)
   * [SPOTLY -  Infraestructura](proyeto/spotly-infraestructura.md)
   * [Spotly](proyeto/spotly.md)
+  * [hardware requerido](proyeto/hardware-requerido.md)
