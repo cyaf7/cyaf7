@@ -108,3 +108,4 @@
   * [Spotly](proyeto/spotly.md)
   * [hardware requerido](proyeto/hardware-requerido.md)
   * [La explicación](proyeto/la-explicacion.md)
+  * [1.2 OPNsense - Firewall y Router Central](proyeto/1.2-opnsense-firewall-y-router-central.md)

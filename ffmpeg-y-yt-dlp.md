@@ -1292,11 +1292,9 @@ Location: https://objects.githubusercontent.com/github-production-release-asset-
 
 El binario se descarga desde el repositorio oficial de GitHub y se guarda en `/usr/local/bin/`, que es un directorio estándar para ejecutables disponibles globalmente en el sistema.
 
-### 6.2.1 Screenshot recomendado
 
-Captura el output de `wget` mostrando el mensaje final de descarga completada.
 
-### 6.2.2 Posible error
+### 6.2 Posible error
 
 ```
 wget: unable to resolve host address 'github.com'
@@ -1607,98 +1605,84 @@ podcast_parte_001.mp3
 podcast_parte_002.mp3
 ```
 
-Estos fragmentos estarían listos para subirse a una plataforma de podcast.
-
-### 7.6 Screenshot recomendado
-
-Captura los tres pasos ejecutados y el listado final:
-
-```bash
-ls -lh podcast_parte_*.mp3
-```
-
 **Observación de evaluación:**\
 Este ejemplo demuestra un flujo real de trabajo: descarga, conversión y segmentación. Además, deja claro que yt-dlp y FFmpeg tienen funciones complementarias.
 
 ***
 
-## 8. Comandos para screenshots
+## 8. Comandos&#x20;
 
-Esta sección resume qué comandos ejecutar para obtener cada captura necesaria para la documentación.
+Esta sección resume qué comandos ejecutar&#x20;
 
-### 8.1 Captura de actualización del sistema
+### 8.1 actualización del sistema
 
 ```bash
 sudo apt update && sudo apt upgrade -y
 ```
 
-Captura recomendada: terminal mostrando la actualización de repositorios y paquetes.
 
-### 8.2 Captura de instalación de FFmpeg
+
+### 8.2  instalación de FFmpeg
 
 ```bash
 sudo apt install ffmpeg -y
 ```
 
-Captura recomendada: terminal mostrando dependencias y mensaje final `Setting up ffmpeg`.
 
-### 8.3 Captura de verificación de FFmpeg
+
+### 8.3 verificación de FFmpeg
 
 ```bash
 ffmpeg -version
 ```
 
-Captura recomendada: output completo con versión y librerías.
 
-### 8.4 Captura de ayuda de FFmpeg
+
+### 8.4 ayuda de FFmpeg
 
 ```bash
 ffmpeg -h
 ```
 
-Captura recomendada: primeras líneas de uso y opciones básicas.
-
-### 8.5 Captura de descarga de vídeo de prueba
+### 8.5 descarga de vídeo de prueba
 
 ```bash
 wget https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4 -O coldplay.mp4
 ```
 
-Captura recomendada: descarga completada y archivo guardado.
 
-### 8.6 Captura de información del vídeo
+
+### 8.6 información del vídeo
 
 ```bash
 ffmpeg -i coldplay.mp4
 ```
 
-Captura recomendada: sección con duración, streams, códec de vídeo y códec de audio.
-
-### 8.7 Captura de conversión con H.264
+### 8.7 Conversión con H.264
 
 ```bash
 ffmpeg -i coldplay.mp4 -vcodec libx264 coldplay_264.mkv
 ```
 
-Captura recomendada: progreso y resumen final.
 
-### 8.8 Captura de conversión con H.265
+
+### 8.8 Conversión con H.265
 
 ```bash
 ffmpeg -i coldplay.mp4 -vcodec libx265 coldplay_265.mkv
 ```
 
-Captura recomendada: progreso, velocidad y resumen final.
 
-### 8.9 Captura de comparación de tamaños
+
+### 8.9 Comparación de tamaños
 
 ```bash
 ls -lh coldplay.mp4 coldplay_264.mkv coldplay_265.mkv
 ```
 
-Captura recomendada: listado mostrando los tres tamaños.
 
-### 8.10 Captura de cambio de códec de audio
+
+### 8.10  cambio de códec de audio
 
 ```bash
 ffmpeg -i coldplay.mp4 -vcodec copy -acodec mp3 coldplay_mp3.mkv
@@ -1706,141 +1690,128 @@ ffmpeg -i coldplay.mp4 -vcodec copy -acodec aac coldplay_aac.mkv
 ffmpeg -i coldplay.mp4 -vcodec copy -acodec libvorbis coldplay_vorbis.mkv
 ```
 
-Captura recomendada: ejecución de los comandos y salida final.
 
-### 8.11 Captura de comparación de audios
+
+### 8.11 comparación de audios
 
 ```bash
 ls -lh coldplay_mp3.mkv coldplay_aac.mkv coldplay_vorbis.mkv
 ```
 
-Captura recomendada: listado comparando los tamaños generados.
 
-### 8.12 Captura de bitrate personalizado
+
+### 8.12 bitrate personalizado
 
 ```bash
 ffmpeg -i coldplay.mp4 -b:v 2500k -b:a 192k coldplay_custom.mp4
 ```
 
-Captura recomendada: progreso y bitrate aproximado.
 
-### 8.13 Captura de extracción de audio
+
+### 8.13 extracción de audio
 
 ```bash
 ffmpeg -i coldplay.mp4 -vn coldplay_audio.mp3
 ```
 
-Captura recomendada: stream mapping y velocidad de procesamiento.
 
-### 8.14 Captura de verificación del audio extraído
+
+### 8.14 verificación del audio extraído
 
 ```bash
 ffmpeg -i coldplay_audio.mp3
 ```
 
-Captura recomendada: output mostrando solo stream de audio.
 
-### 8.15 Captura de recorte de vídeo
+
+### 8.15  recorte de vídeo
 
 ```bash
 ffmpeg -i coldplay.mp4 -ss 35 -t 30 coldplay_frag.mp4
 ```
 
-Captura recomendada: output del recorte.
 
-### 8.16 Captura de verificación del fragmento
+
+### 8.16 verificación del fragmento
 
 ```bash
 ffprobe coldplay_frag.mp4
 ```
 
-Captura recomendada: duración aproximada de 30 segundos.
 
-### 8.17 Captura de verificación de Python
+
+### 8.17  verificación de Python
 
 ```bash
 python3 --version
 ```
 
-Captura recomendada: versión de Python instalada.
 
-### 8.18 Captura de instalación de yt-dlp
+
+### 8.18  instalación de yt-dlp
 
 ```bash
 sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp
 ```
 
-Captura recomendada: descarga completada.
 
-### 8.19 Captura de permisos de yt-dlp
+
+### 8.19 permisos de yt-dlp
 
 ```bash
 sudo chmod a+rx /usr/local/bin/yt-dlp
 ls -l /usr/local/bin/yt-dlp
 ```
 
-Captura recomendada: permisos de ejecución visibles.
 
-### 8.20 Captura de versión de yt-dlp
+
+### 8.20 versión de yt-dlp
 
 ```bash
 yt-dlp --version
 ```
 
-Captura recomendada: número de versión.
 
-### 8.21 Captura de ayuda de yt-dlp
+
+### 8.21  ayuda de yt-dlp
 
 ```bash
 yt-dlp -h
 ```
 
-Captura recomendada: primeras líneas de opciones.
 
-### 8.22 Captura de formatos disponibles
+
+### 8.22  formatos disponibles
 
 ```bash
 yt-dlp -F "https://www.youtube.com/watch?v=zrnCBt2q-dY"
 ```
 
-Captura recomendada: tabla de formatos con ID, extensión, resolución y códecs.
 
-### 8.23 Captura de descarga por ID
+
+### 8.23  descarga por ID
 
 ```bash
 yt-dlp -f 137 "https://www.youtube.com/watch?v=zrnCBt2q-dY"
 ```
 
-Captura recomendada: progreso hasta 100 %.
 
-### 8.24 Captura de descarga mejor calidad con fusión
+
+### 8.24 descarga mejor calidad con fusión
 
 ```bash
 yt-dlp -f "bv*+ba" "https://www.youtube.com/watch?v=bH3NFlkui4Y"
 ```
 
-Captura recomendada: proceso de descarga y línea `[ffmpeg] Merging formats into ...`.
 
-### 8.25 Captura de extracción de audio con yt-dlp
+
+### 8.25 extracción de audio con yt-dlp
 
 ```bash
 yt-dlp -x --audio-format mp3 "https://www.youtube.com/watch?v=zrnCBt2q-dY"
 ```
 
-Captura recomendada: descarga y conversión a MP3.
 
-### 8.26 Captura del ejemplo propio
-
-```bash
-yt-dlp -f "bestaudio" -o "concierto_original.%(ext)s" "https://www.youtube.com/watch?v=XXXXXXXXX"
-ffmpeg -i concierto_original.webm -acodec libmp3lame -b:a 320k concierto.mp3
-ffmpeg -i concierto.mp3 -f segment -segment_time 600 -c copy "podcast_parte_%03d.mp3"
-ls -lh podcast_parte_*.mp3
-```
-
-Captura recomendada: comandos ejecutados y listado final de fragmentos generados.
-
-***
 
 ## 9. Referencias y fuentes
 
@@ -1868,6 +1839,3 @@ Captura recomendada: comandos ejecutados y listado final de fragmentos generados
 * AOM AV1 Codec: [https://aomedia.org/av1/](https://aomedia.org/av1/)
 * Google VP9 Documentation: [https://developers.google.com/media/vp9](https://developers.google.com/media/vp9)
 
-***
-
-Documento elaborado para MP0375 – Servicios | CFGS ASIX.
