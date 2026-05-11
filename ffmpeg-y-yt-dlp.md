@@ -825,11 +825,7 @@ sudo apt update
 sudo apt install ffmpeg -y
 ```
 
-### 5.2.2 Screenshot recomendado
 
-Captura la terminal mostrando el proceso de instalación y el mensaje final `Setting up ffmpeg`.
-
-Esta captura demuestra que FFmpeg se ha instalado correctamente junto con sus dependencias, como `libavcodec`, `libavfilter`y otras bibliotecas que contienen los códecs y filtros que FFmpeg puede utilizar.
 
 ***
 
@@ -863,16 +859,7 @@ Este output confirma que FFmpeg está instalado y funcional. La información de 
 * `libswscale`: escalado y conversión de formatos de píxel.
 * `libswresample`: remuestreo de audio.
 
-### 5.3.1 Screenshot recomendado
-
-Captura el output completo del comando:
-
-```bash
-ffmpeg -version
-```
-
-**Observación de evaluación:**\
-No basta con decir que FFmpeg está instalado. Es mejor explicar qué significan las librerías mostradas en el output.
+###
 
 ***
 
@@ -969,15 +956,7 @@ Este output muestra:
 * La frecuencia de muestreo del audio.
 * Si el audio es mono o estéreo.
 
-### 5.6.1 Screenshot recomendado
-
-Captura el output completo de:
-
-```bash
-ffmpeg -i coldplay.mp4
-```
-
-Esta captura funciona como ficha técnica del vídeo.
+###
 
 ### 5.6.2 Posible error
 
@@ -1023,11 +1002,9 @@ El output en tiempo real muestra:
 
 Si `speed=1.8x`, significa que FFmpeg está convirtiendo el vídeo 1,8 veces más rápido que la duración real del vídeo.
 
-### 5.7.2 Screenshot recomendado para H.264
 
-Captura la terminal mientras procesa y también el resumen final.
 
-### 5.7.3 Conversión con H.265
+### 5.7.2 Conversión con H.265
 
 ```bash
 ffmpeg -i coldplay.mp4 -vcodec libx265 coldplay_265.mkv
@@ -1037,11 +1014,7 @@ H.265 suele producir archivos más pequeños que H.264 manteniendo una calidad v
 
 La velocidad `speed` puede ser menor, por ejemplo `0.3x` o `0.5x`, porque H.265 realiza cálculos más complejos para mejorar la compresión.
 
-### 5.7.4 Screenshot recomendado para H.265
-
-Captura el output del proceso de codificación con H.265 y observa especialmente la velocidad de procesamiento.
-
-### 5.7.5 Comparar tamaños
+### 5.7.3 Comparar tamaños
 
 ```bash
 ls -lh coldplay.mp4 coldplay_264.mkv coldplay_265.mkv
@@ -1057,7 +1030,7 @@ Output esperado:
 
 Esta comparación permite observar que H.265 puede generar un archivo más pequeño que H.264 con una calidad visual similar.
 
-### 5.7.6 Screenshot recomendado para tamaños
+### 5.7.4 Screenshot recomendado para tamaños
 
 
 
@@ -1079,9 +1052,7 @@ Posible solución:
 sudo apt install ffmpeg libx265-dev -y
 ```
 
-Si el error persiste, puede que el binario de FFmpeg no esté compilado con soporte para `libx265`.
-
-**Observación de evaluación:**\
+Si el error persiste, puede que el binario de FFmpeg no esté compilado con soporte para `libx265`.\
 H.265 no siempre estará disponible según cómo se haya compilado FFmpeg. Esto muestra que no todos los binarios de FFmpeg tienen exactamente las mismas capacidades.
 
 ***
@@ -1114,13 +1085,6 @@ Estos comandos son más rápidos que una conversión de vídeo porque no se reco
 ls -lh coldplay_mp3.mkv coldplay_aac.mkv coldplay_vorbis.mkv
 ```
 
-### 5.8.3 Screenshot recomendado
-
-
-
-**Observación de evaluación:**\
-Este paso demuestra que vídeo y audio son streams independientes. Es posible copiar uno y recodificar el otro.
-
 ***
 
 ## 5.9 Paso 9: personalizar el bitrate de vídeo y audio
@@ -1143,9 +1107,7 @@ frame=  ...  bitrate=2691.2kbits/s speed=2.5x
 
 El bitrate determina cuántos datos por segundo se utilizan para representar el contenido. Un bitrate alto suele producir mejor calidad y mayor tamaño de archivo. Un bitrate bajo reduce el tamaño, pero puede degradar la calidad.
 
-### 5.9.1 Screenshot recomendado
-
-**Observación de evaluación:**\
+\
 El bitrate es una de las variables más importantes en compresión multimedia porque representa el equilibrio entre calidad, tamaño y ancho de banda.
 
 ***
@@ -1184,7 +1146,7 @@ Stream #0:0: Audio:
 
 No debe aparecer ningún stream de vídeo.
 
-### 5.10.2 Screenshot recomendado
+
 
 
 
@@ -1222,11 +1184,9 @@ ffprobe coldplay_frag.mp4
 
 También se puede abrir el archivo en un reproductor para comprobar visualmente que el fragmento corresponde al intervalo elegido.
 
-### 5.11.4 Screenshot recomendado
 
-Captura el output del comando de recorte y, después, la verificación de duración con `ffprobe`.
 
-### 5.11.5 Precisión de `-ss`
+### 5.11.4 Precisión de `-ss`
 
 Colocar `-ss` antes de `-i` suele ser más rápido, porque FFmpeg busca el punto de inicio antes de decodificar. Sin embargo, puede ser menos preciso.
 
@@ -1265,7 +1225,7 @@ Solución:
 sudo apt install python3 -y
 ```
 
-**Observación de evaluación:**\
+\
 Verificar dependencias antes de instalar evita errores posteriores y forma parte de una metodología correcta.
 
 ***
@@ -1318,15 +1278,7 @@ Para verificar permisos:
 ls -l /usr/local/bin/yt-dlp
 ```
 
-### 6.3.1 Screenshot recomendado
-
-
-
-```bash
-ls -l /usr/local/bin/yt-dlp
-```
-
-**Observación de evaluación:**\
+\
 El binario descargado no sirve si no tiene permiso de ejecución. Este paso demuestra conocimiento básico de permisos en Linux.
 
 ***
@@ -1378,7 +1330,7 @@ O, si el sistema está en español y se busca por otra palabra:
 yt-dlp -h | grep "audio"
 ```
 
-**Observación de evaluación:**\
+\
 yt-dlp tiene muchas opciones. Saber filtrar la ayuda con `grep` es útil para encontrar parámetros concretos rápidamente.
 
 ***
@@ -1428,8 +1380,6 @@ La tabla muestra:
 
 En YouTube, los formatos de alta resolución suelen estar separados en vídeo only y audio only. Por eso yt-dlp descarga ambos streams y después usa FFmpeg para fusionarlos.
 
-### 6.6.1 Screenshot recomendado
-
 
 
 ### 6.6.2 Posible error
@@ -1464,7 +1414,7 @@ Output esperado:
 [download]  100% of   78.55MiB in 00:00:20 at 3.85MiB/s
 ```
 
-**Observación de evaluación:**\
+\
 Descargar por ID demuestra control manual sobre el formato. Sin embargo, si el formato elegido es solo vídeo, puede descargarse sin audio.
 
 ***
@@ -1497,15 +1447,7 @@ Aquí se observa la integración entre yt-dlp y FFmpeg. yt-dlp descarga el mejor
 
 Sin FFmpeg instalado, este paso no podría completarse correctamente.
 
-### 6.8.1 Screenshot recomendado
-
-
-
-```
-[ffmpeg] Merging formats into ...
-```
-
-**Observación de evaluación:**\
+\
 Esta es una de las capturas más importantes porque demuestra que yt-dlp y FFmpeg trabajan conjuntamente.
 
 ***
@@ -1530,11 +1472,9 @@ El flag `-x` indica que se debe extraer solo el audio. La opción `--audio-forma
 
 Internamente, yt-dlp usa FFmpeg para convertir el audio al formato solicitado.
 
-### 6.9.3 Screenshot recomendado
 
 
-
-### 6.9.4 Descargar calidad específica, por ejemplo 1080p
+### 6.9.3 Descargar calidad específica, por ejemplo 1080p
 
 ```bash
 yt-dlp -f "bv*[height=1080]+ba" "https://www.youtube.com/watch?v=zrnCBt2q-dY"
@@ -1542,13 +1482,13 @@ yt-dlp -f "bv*[height=1080]+ba" "https://www.youtube.com/watch?v=zrnCBt2q-dY"
 
 Este comando selecciona el mejor vídeo con altura de 1080 píxeles y lo combina con el mejor audio disponible.
 
-### 6.9.5 Descargar una playlist completa
+### 6.9.4 Descargar una playlist completa
 
 ```bash
 yt-dlp "https://www.youtube.com/playlist?list=PLxxxxxx"
 ```
 
-**Observación de evaluación:**\
+\
 La potencia de yt-dlp está en la selección de formato. No se limita a descargar “lo mejor”, sino que permite definir criterios técnicos exactos.
 
 ***
