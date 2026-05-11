@@ -1,404 +1,94 @@
 # hardware requerido
 
-## 1.1 Hardware Requerido - Especificaciones Completas
+## 1.1 Hardware Requerido
 
 ### Visión General
 
-La infraestructura de Spotly se compone de tres capas de hardware:
+La infraestructura de Spotly se compone de tres máquinas servidoras, un firewall central, un dispositivo de red, un equipo administrativo y componentes periféricos. Toda la arquitectura se construye sobre hardware físico disponible en el laboratorio de la escuela, sin dependencia de proveedores de nube pública.
 
-1. **Capa de Cluster** (3 nodos MicroCloud)
-2. **Capa de Red** (OPNsense firewall + Switch HP)
-3. **Capa de Soporte** (PC administrativo, PC respaldo)
+### Nodos del Clúster MicroCloud (3 máquinas idénticas)
 
-***
+El clúster funciona sobre tres servidores físicos denominados nodo1, nodo2 y nodo3. Cada uno ejecuta Ubuntu Server 22.04.5 LTS y contribuye recursos de CPU, RAM y almacenamiento al sistema distribuido.
 
-### Nodos de Cluster (3 máquinas idénticas)
+Cada nodo dispone de 8 núcleos de procesamiento a 2.4 GHz aproximadamente, lo que permite ejecutar entre 3 y 4 máquinas virtuales medianas simultáneamente sin degradación de rendimiento. Los 16 GB de RAM se distribuyen entre el sistema operativo base (2-3 GB), los componentes de MicroCloud —LXD, MicroCeph y MicroOVN— (8-10 GB) y espacio de operación (3-4 GB restantes). Este balance es crítico porque si la RAM disponible cae por debajo de 14 GB, MicroCeph entra en estado HEALTH\_WARN y comienza a rechazar escrituras.
 
-#### Especificaciones Técnicas
+El almacenamiento primario es un SSD de 500 GB por nodo. De este espacio, el sistema operativo ocupa 20 GB en la partición raíz, dejan 350 GB mínimo disponibles para los dispositivos loop que funcionan como OSDs de Ceph. Los 80 GB restantes sirven como espacio de trabajo para logs, temporales y buffers del sistema. La velocidad SSD es crítica: MicroCeph requiere latencia de escritura menor a 5 milisegundos. Si se utilizara almacenamiento mecánico o muy lento, el cluster entraría en estado HEALTH\_ERR por timeout de operaciones.
 
-| Aspecto               | Especificación                            |
-| --------------------- | ----------------------------------------- |
-| **Nombre**            | nodo1, nodo2, nodo3                       |
-| **Sistema Operativo** | Ubuntu Server 22.04.5 LTS                 |
-| **Kernel**            | Linux 5.15.x                              |
-| **CPU**               | 8 cores @ 2.4 GHz (Intel Xeon o AMD EPYC) |
-| **RAM**               | 16 GB DDR4 (mínimo 14 GB disponible)      |
-| **Almacenamiento**    | 500 GB SSD (mínimo 350 GB libres post-OS) |
-| **NIC**               | 1x Gigabit Ethernet (enp1s0)              |
-| **Virtualización**    | CPU con soporte VT-x/AMD-V                |
+Cada nodo tiene una única interfaz de red Gigabit Ethernet física conectada al switch. Esta interfaz única es suficiente porque toda la segmentación en VLANs ocurre en el switch HP usando etiquetado 802.1Q: el kernel Linux del nodo crea subinterfaces virtuales (vlan10, vlan20) sobre esa interfaz física única. Todo el tráfico del cluster corre a través de esta interfaz de 1000 Mbps.
 
-#### Descripción Detallada
-
-**CPU (8 cores)**
-
-* Necesario para ejecutar LXD hypervisor
-* Cada VM consume 2-4 cores según carga
-* 8 cores permite \~3-4 VMs medianas simultáneamente
-* El factor de replicación Ceph (3x) requiere CPU para replicación
-
-**RAM (16 GB)**
-
-* 2-3 GB: sistema operativo base
-* 8-10 GB: MicroCloud (LXD, MicroCeph, MicroOVN)
-* 3-4 GB: headroom para operaciones pico
-* Si usas <14 GB libres, Ceph entra en HEALTH\_WARN
-
-**Almacenamiento (500 GB SSD)**
-
-* 20 GB: partición /root (Ubuntu)
-* 350 GB mínimo: para MicroCeph OSDs
-* 80 GB: espacio de trabajo (logs, temporal)
-* SSD es crítico: Ceph necesita latencia <5ms
-
-**NIC Única (enp1s0)**
-
-* Enrutada a VLAN 10 (intra-cluster) via switch
-* Enrutada a VLAN 20 (management) via switch
-* Enrutada a VLAN 50 (OVN uplink) via switch
-* Toda segmentación VLAN ocurre en el switch HP
-
-#### Preparación del Nodo
-
-Después de instalar Ubuntu 22.04.5:
-
-```bash
-# Verificar requisitos
-lscpu | grep "CPU family\|Model name\|CPU(s)"
-free -h | head -2
-df -h / | tail -1
-ethtool enp1s0
-
-# Actualizar sistema
-sudo apt update && sudo apt upgrade -y
-
-# Instalar herramientas básicas
-sudo apt install -y \
-  curl wget git net-tools \
-  snapd snapcraft \
-  vim nano htop iotop \
-  openssh-server openssh-client
-```
-
-***
+La capacidad de procesamiento requiere soporte hardware para virtualización completa. Cada nodo debe tener CPU que soporte VT-x (procesadores Intel Xeon) o AMD-V (EPYC), aunque todos los servidores del laboratorio cumplen este requisito.
 
 ### Firewall OPNsense
 
-#### Especificaciones Técnicas
+OPNsense es una distribución de firewall basada en FreeBSD que actúa como el único punto de enrutamiento entre todas las redes del sistema. Cada comunicación entre VLANs pasa obligatoriamente por él, donde se aplican las reglas de seguridad antes de permitir o denegar el tráfico.
 
-| Aspecto               | Especificación                     |
-| --------------------- | ---------------------------------- |
-| **Sistema Operativo** | OPNsense 26.1.2\_5 (FreeBSD 13.2)  |
-| **CPU**               | 2 cores @ 2.0 GHz                  |
-| **RAM**               | 4 GB DDR4                          |
-| **Almacenamiento**    | 32 GB SSD                          |
-| **Interfaz WAN**      | em0 (NIC integrada, 1 Gbps)        |
-| **Interfaz LAN**      | ue0 (USB Realtek RTL8153, 1 Gbps)  |
-| **Propósito**         | Router central, NAT, IDS, Firewall |
+El hardware del firewall es un servidor de recursos más modestos: 2 núcleos de CPU, 4 GB de RAM y 32 GB de almacenamiento SSD es suficiente. La versión instalada es OPNsense 26.1.2\_5 para arquitectura amd64, que ejecuta en FreeBSD 13.2.
 
-#### ¿Por qué OPNsense?
+OPNsense requiere dos interfaces de red. La interfaz em0 es una NIC integrada Gigabit que se conecta directamente al router de la escuela en modo DHCP. Esta interfaz recibe asignación dinámica en el rango 192.168.109.x y sirve como puerta de salida (WAN) hacia internet.
 
-**Alternativas evaluadas:**
+La segunda interfaz, denominada ue0, es donde surge un detalle importante sobre la arquitectura real del laboratorio. El servidor OPNsense disponible en el laboratorio tiene solo una NIC física integrada. Para conseguir una segunda interfaz, el equipo adquirió un adaptador USB Realtek RTL8153 que proporciona una salida RJ45 Gigabit adicional. Este adaptador conecta a través de USB 3.0 y presenta latencia de menos de 1 milisegundo, imperceptible para operaciones de red interna. Aunque puede parecer improvisado, funciona de forma estable en producción: el adaptador soporta VLAN trunking (etiquetado 802.1Q) sin problemas.
 
-* **pfsense**: Similar, pero menos desarrollo reciente
-* **Vyatta/EdgeRouter**: Menos user-friendly
-* **MikroTik**: Propietario, menos documentación
-* **iptables puro**: Demasiado manual, sin UI
+Sobre la interfaz ue0 se crean subinterfaces VLAN etiquetadas que actúan como gateways de red. OPNsense configura: vlan0.10 con IP 192.168.10.1/24 (VLAN 10, cluster), vlan0.20 con IP 192.168.20.1/24 (VLAN 20, management) y vlan0.40 con IP 192.168.40.1/24 (VLAN 40, backup).
 
-**Elegido OPNsense porque:**
-
-* Open-source basado en FreeBSD
-* Web UI moderna (Restful API)
-* Soporte completo para VLANs 802.1Q
-* IDS/IPS con Suricata integrado
-* VPN (WireGuard, OpenVPN)
-* Firewall Schedules (para ventanas de backup)
-* Actualización fácil vía web
-
-#### Funciones Principales
-
-**1. Router entre VLANs**
-
-* Enrutamiento L3 entre VLAN 10, 20, 30, 40, 50
-* Interfaz ue0 (USB) como uplink del switch
-
-**2. NAT Outbound**
-
-* VLAN 10 (cluster) → internet vía WAN (em0)
-* Necesario para que nodos accedan a internet
-
-**3. Firewall (DROP by default)**
-
-* OPT1 (VLAN 10): permite intra-cluster + outbound
-* OPT2 (VLAN 20): permite SSH a nodos + outbound
-* OPT3 (VLAN 30): permite dmz → app-core + outbound
-* OPT4 (VLAN 40): permite backup SOLO en ventana (02:30-04:00)
-
-**4. IDS con Suricata**
-
-* Detecta ataques de red
-* Bloquea patrones maliciosos
-
-**5. VPN**
-
-* WireGuard (en construcción, reemplazará Tailscale)
-* OpenVPN (alternativa)
-
-#### Interfaz WAN (em0)
-
-```
-Real Network (escuela)
-         ↓
-    Router escuela (DHCP)
-         ↓
-    Cable RJ45
-         ↓
-    OPNsense em0 (DHCP client)
-         ↓
-    IP dinámico: 192.168.109.x
-```
-
-**Características:**
-
-* DHCP automático del router escuela
-* Acceso a internet público
-* Gateway a redes externas
-
-#### Interfaz LAN (ue0)
-
-```
-USB Realtek RTL8153
-         ↓
-OPNsense ue0 (192.168.1.1/24)
-         ↓
-Subinterfaces VLAN:
-  - vlan0.10 (VLAN 10 tag) → 192.168.10.1/24
-  - vlan0.20 (VLAN 20 tag) → 192.168.20.1/24
-  - vlan0.30 (VLAN 30 tag) → 192.168.30.1/24
-  - vlan0.40 (VLAN 40 tag) → 192.168.40.1/24
-         ↓
-    Trama Ethernet etiquetada (802.1Q)
-         ↓
-    Cable RJ45
-         ↓
-    Switch HP 1810-24G
-```
-
-**¿Por qué USB?**
-
-* Servidor no tiene segundo NIC físico
-* Realtek USB 3.0 → Gigabit soporta VLAN trunking
-* Suficiente ancho de banda para operaciones
-
-#### Instalación de OPNsense
-
-1. Descargar ISO desde opnsense.org
-2. Quemar en USB con Balena Etcher
-3. Conectar em0 a router escuela (DHCP)
-4. Conectar ue0 al switch HP
-5. Bootear desde USB
-6. Configurar VLAN subinterfaces via web UI (192.168.1.1:443)
-
-***
+El firewall realiza también funciones adicionales en el proyecto: genera DHCP en las VLANs 10 y 20 para asignación automática de IPs, ejecuta IDS (detección de intrusiones) con Suricata, y gestiona firewall schedules que activan reglas en horarios específicos (principalmente la ventana de backup nocturno de la VLAN 40).
 
 ### PC Administrativo
 
-#### Especificaciones Técnicas
+El equipo administrativo ejecuta Ubuntu Desktop 22.04 LTS y reside en la VLAN 20 con IP estática 192.168.20.20. Este PC cumple dos roles fundamentales: actúa como servidor LDAP centralizado (slapd corre aquí con los usuarios del equipo) y como host desde el cual se ejecutan los playbooks de Ansible que configuran los nodos.
 
-| Aspecto               | Especificación                             |
-| --------------------- | ------------------------------------------ |
-| **Sistema Operativo** | Ubuntu Desktop 22.04 LTS                   |
-| **CPU**               | 4 cores (suficiente para SSH, LDAP, Wazuh) |
-| **RAM**               | 8 GB (mínimo 4 GB)                         |
-| **VLAN**              | 20 (Management)                            |
-| **IP Estática**       | 192.168.20.20                              |
-| **Servicios**         | OpenLDAP (slapd), Ansible                  |
+La elección de no ejecutar LDAP dentro del cluster como máquina virtual responde a un problema de dependencia circular: si LDAP estuviera en una VM dentro del cluster, los nodos necesitarían conectar a LDAP durante el arranque para autenticarse vía SSSD, pero las VMs a su vez dependen de que LXD esté funcionando, y LXD depende de que los nodos estén correctamente inicializados. Mantener LDAP en hardware real rompe esta dependencia circular.
 
-#### Rol en la Infraestructura
+### PC de Respaldo
 
-**1. Servidor LDAP Centralizado**
-
-* Base DN: dc=spotly,dc=local
-* Usuarios: cami, chris, ivan, prof
-* SSSD en nodos se autentica contra este servidor
-* SSH de nodos usa LDAP + public keys
-
-**2. Host Ansible**
-
-* Almacena playbooks
-* Ejecuta configuración en nodos
-* Conexión SSH hacia 192.168.20.11/12/13
-
-**3. Punto de Control**
-
-* SSH a nodos para troubleshooting
-* Acceso a LXD UI remoto (via SSH tunnel)
-
-
-
-### PC Respaldo
-
-#### Especificaciones Técnicas
-
-| Aspecto               | Especificación              |
-| --------------------- | --------------------------- |
-| **Sistema Operativo** | Ubuntu Server 22.04         |
-| **CPU**               | 2 cores (solo rsync)        |
-| **RAM**               | 4 GB                        |
-| **Almacenamiento**    | 2-4 TB HDD (para respaldos) |
-| **VLAN**              | 40 (Backup)                 |
-| **IP Estática**       | 192.168.40.10               |
-| **Servicio**          | rsync daemon                |
-
-#### Rol
-
-**Servidor de Respaldo Pasivo**
-
-* Recibe rsync desde data (PostgreSQL) VM
-* Recibe rsync desde app-core (configuración)
-* Recibe rsync desde vision (detector configs)
-* Activo SOLO durante ventana 02:30-04:00 (Firewall Schedule)
-
-**Almacenamiento Secundario**
-
-* Copia de PostgreSQL íntegra
-* Copia de código de producción
-* Punto de recuperación ante desastre
-
-***
+Existe un equipo destinado para backup ubicado en la VLAN 40 (backup) con IP 192.168.40.10. El sistema ejecuta respaldos automáticos por la VLAN 20 cada lunes, miércoles y viernes a las 02:00 AM mediante un playbook de Ansible. El proceso realiza tres capas de protección: exportación completa de máquinas virtuales (disco + configuración), respaldo de configuración de nodos (Netplan, hosts, bases de datos OVN) y política de retención automática que mantiene siempre las 2 versiones más recientes para optimizar los 118 GB disponibles en el servidor de backup.
 
 ### Switch HP 1810-24G
 
-#### Especificaciones Técnicas
+El switch es un concentrador gestionado de 24 puertos Gigabit Ethernet que implementa soporte completo para VLANs IEEE 802.1Q. Ofrece una velocidad de backplane de 48 Gbps, suficiente para manejar el tráfico esperado de 3 nodos simultáneamente. Incluye interfaz de administración web accesible en IP 192.168.2.10.
 
-| Aspecto                 | Especificación       |
-| ----------------------- | -------------------- |
-| **Modelo**              | HP 1810-24G (J9801A) |
-| **Puertos**             | 24x Gigabit Ethernet |
-| **Estándar**            | IEEE 802.1Q (VLAN)   |
-| **VLANs Soportadas**    | 1-4094               |
-| **Velocidad Backplane** | 48 Gbps              |
-| **Interfaz Gestión**    | Web UI, SSH          |
-| **Dirección IP**        | 192.168.2.10         |
+La tabla siguiente detalla la distribución de puertos:
 
-#### Distribución de Puertos
+| Puerto                       | Dispositivo     | Función                | Rol                     |
+| ---------------------------- | --------------- | ---------------------- | ----------------------- |
+| 4                            | Admin PC        | Management del clúster | VLAN 20                 |
+| 7                            | nodo02          | Nodo del clúster       | VLANs 10, 20            |
+| 11                           | nodo01          | Nodo del clúster       | VLANs 10, 20            |
+| 12                           | Servidor Backup | Respaldos programados  | VLAN 40, 20             |
+| 19                           | nodo03          | Nodo del clúster       | VLANs 10, 20            |
+| 23                           | OPNsense (ue0)  | Firewall central       | Todos los VLANs (trunk) |
+| 24                           | (Disponible)    | Internet / Redundancia | —                       |
+| 1-3, 5-6, 8-10, 13-18, 20-22 | (Disponibles)   | Expansión futura       | —                       |
 
-```
-Puerto 1-5, 8-9, 12-18, 20-22, 24: Disponibles (sin usar)
-Puerto 4: Ubuntu desktop (VLAN 20, Untagged, para configurar el switch )
-Puerto 6: Admin PC (VLAN 20, Tagged)
-Puerto 7: Node2 (VLAN 10,20, Tagged)
-Puerto 10: Laptop (para configuraciones, no hace parte de la infraestrutura) (VLAN 20, Tagged)
-Puerto 11: Node1 (VLAN 10,20, Tagged)
-Puerto 19: Node3 (VLAN 10,20, Tagged)
-Puerto 23: OPNsense ue0 (VLAN 10,20,30,40, Tagged)
-```
+El puerto 23 (donde se conecta OPNsense) es especial: funciona como trunk VLAN, transportando todas las VLANs etiquetadas simultáneamente. Los puertos 23 y 24 son los candidatos naturales para conexiones de internet o redundancia en futuras expansiones.
 
-#### VLAN Tagging Explicado
+En cada puerto se configura la participación en VLANs usando etiquetado 802.1Q. El etiquetado funciona mediante tres modos: T (Tagged) significa que el puerto transporta tramas con etiqueta VLAN explícita, el dispositivo conectado debe entender etiquetado 802.1Q; U (Untagged) significa que el puerto pertenece a una VLAN específica pero las tramas viajan sin etiqueta, útil para dispositivos legacy que no entienden VLANs; E (Excluded) significa que el puerto no participa en esa VLAN en absoluto, el tráfico es descartado en nivel de switch.
 
-**Tagged (T)**:
-
-* Puerto transporta tramas CON etiqueta 802.1Q
-* El dispositivo entiende VLANs (requiere configuración de subinterfaces)
-* Ejemplo: enp1s0.10 en nodo extrae VLAN 10 automáticamente
-
-**Untagged (U)**:
-
-* Puerto transporta tramas SIN etiqueta
-* Acceso directo a una VLAN (para devices sin soporte VLAN)
-* Ejemplo: Windows en P4 obtiene VLAN 20 transparentemente
-
-**Excluded (E)**:
-
-* Puerto NO pertenece a esa VLAN
-* Tráfico bloqueado en switch level
-
-***
+Los nodos (puertos 7, 11, 19) tienen configuración idéntica: participan como Tagged en VLAN 10 y VLAN 20. El Admin PC (puerto 4) participa como Tagged en VLAN 20. El servidor de backup (puerto 12) participa como Tagged en VLAN 40. El firewall OPNsense (puerto 23) participa como Tagged en todas las VLANs (10, 20, 40).
 
 ### Adaptador USB Realtek RTL8153
 
-#### Especificaciones Técnicas
+Como se mencionó en la sección de firewall, existe un adaptador USB 3.0 con salida Gigabit Ethernet que proporciona la segunda interfaz de red al servidor OPNsense. Este adaptador soporta VLAN trunking y funciona con latencia imperceptible para operaciones de red interna. La razón técnica de su uso es que el servidor no tenía segunda NIC integrada disponible.
 
-| Aspecto       | Especificación               |
-| ------------- | ---------------------------- |
-| **Interfaz**  | USB 3.0                      |
-| **Salida**    | RJ45 Gigabit Ethernet        |
-| **Velocidad** | 1000 Mbps full duplex        |
-| **Propósito** | LAN interface OPNsense (ue0) |
+### Cámara USB
 
-#### ¿Por qué USB?
+La cámara USB es el dispositivo de captura de imágenes del sistema. Su especificación exacta será proporcionada posteriormente. Para este documento, se entiende como un periférico de captura conectado al equipo que ejecuta el procesamiento de visión artificial.
 
-**Contexto:**
+### Disco Externo SanDisk
 
-* Servidor OPNsense no tiene segundo NIC físico
-* Necesita MÍNIMO 2 interfaces (WAN + LAN)
-* Solución: em0 (integrado) para WAN, USB para LAN
+Como segunda capa de protección física, existe un disco externo SanDisk de capacidad suficiente (1 TB aproximadamente) que se conecta manualmente de forma periódica para realizar respaldos externos de los datos más críticos. Este dispositivo se almacena en el laboratorio y se utiliza únicamente en procedimientos de mantenimiento.
 
-**Ventajas:**
+### Almacenamiento Distribuido: Loop Devices y OSDs
 
-* Gigabit full-duplex suficiente
-* Soporte para VLAN trunking en Linux/FreeBSD
-* Bajo costo
-* Conecta al switch HP
+Cada nodo necesita aportar almacenamiento al cluster MicroCeph. Como cada servidor físico tiene solo un disco SSD que ya está ocupado completamente por el sistema operativo, la solución implementada utiliza loop devices.
 
-**Latencia:**
+Un loop device es un fichero regular almacenado en disco que el kernel de Linux presenta al sistema como si fuera un dispositivo de bloque físico, igual que un pendrive o un disco duro. MicroCeph no distingue entre un loop device y un disco real: lo ve como un dispositivo de bloque válido y lo utiliza como OSD (Object Storage Daemon) para almacenamiento distribuido.
 
-* USB 3.0 → RJ45 introduce <1ms latencia
-* Despreciable para redes internas
+En la práctica, cada nodo tiene un fichero sparse de 200 GB ubicado en `/mnt/ceph-disks/ceph-osd.img`. Durante el arranque del nodo, el script `/etc/rc.local` ejecuta `losetup -fP /mnt/ceph-disks/ceph-osd.img`, que convierte ese fichero en un dispositivo loop (típicamente `/dev/loop11`, `/dev/loop12`, `/dev/loop13` en los tres nodos). MicroCeph añade este dispositivo como OSD con el comando `microceph disk add /dev/loopX --wipe`, y a partir de ese momento Ceph lo trata como almacenamiento real, replicando datos entre los tres OSDs.
 
-***
+Con factor de replicación 3 (que es el estándar de Ceph), cada bloque de datos existe simultáneamente en los tres nodos. La capacidad usable es 600 GB brutos (200 GB × 3) dividido por factor 3, resultando en 200 GB de almacenamiento realmente disponible para las máquinas virtuales del sistema.
 
-### Cámara USB&#x20;
+La ventaja principal es que no requiere hardware adicional: con los servidores disponibles en el laboratorio se alcanza almacenamiento distribuido de 200 GB. La desventaja es que el rendimiento es menor que un disco físico dedicado, y existe una dependencia crítica: si el disco del sistema operativo (que contiene el fichero loop) se llena, el OSD deja de funcionar. Este problema fue experimentado en nodo02 cuando logs del sistema ocuparon casi la totalidad del espacio disponible.
 
-#### Especificaciones Técnicas
+### Resumen de Capacidades
 
-| Aspecto               | Especificación                  |
-| --------------------- | ------------------------------- |
-| **Modelo**            | ELP-USBFHD01M-BL170 (ELP brand) |
-| **Resolución Nativa** | 1920x1080p (Full HD)            |
-| **Ángulo**            | 170° fisheye                    |
-| **FPS Nativo**        | 30 FPS                          |
-| **Interfaz**          | USB 2.0 Hi-Speed                |
-| **Ubicación**         | MacBook de Ivan (en campo, 4G)  |
-
-#### Rol
-
-**Captura de Imágenes**
-
-* Toma fotos del aparcamiento en tiempo real
-* Envía via script spotly\_cam.py (30 FPS)
-* Resolución reducida a 960x540 para ancho de banda
-* JPEG quality 80 (balance calidad/tamaño)
-
-#### Procesamiento
-
-```
-Cámara USB (1920x1080 30 FPS)
-         ↓
-spotly_cam.py (MacBook):
-  - Captura frame
-  - Redimensiona a 960x540
-  - Comprime JPEG (quality 80)
-  - ~50 KB por frame
-         ↓
-POST https://app.spotly.cat/stream/push
-         ↓
-App-core guarda en frame_buffer
-         ↓
-vision VM ejecuta YOLO
-```
-
-***
-
-### Periféricos Adicionales
-
-#### Disco Externo SanDisk 1 TB
-
-* Propósito: Backup externo (segunda capa de respaldo)
-* Conexión: USB 3.0
-* Ubicación: Almacenado en laboratorio
-* Procedimiento: Conexión manual periódica
-
-#### Pendrives USB
-
-* Instalación de sistemas operativos&#x20;
-
+El clúster resultante ofrece 24 núcleos de procesamiento combinados (3 nodos × 8 cores), 24 GB de RAM total distribuida, 200 GB de almacenamiento distribuido tolerante a fallos de un nodo, y redes virtuales completamente aisladas mediante OVN. Estos recursos son suficientes para ejecutar el MVP (producto mínimo viable) de Spotly con máquinas virtuales para backend, base de datos, detección visual y monitoreo.
