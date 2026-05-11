@@ -1059,7 +1059,7 @@ Esta comparación permite observar que H.265 puede generar un archivo más peque
 
 ### 5.7.6 Screenshot recomendado para tamaños
 
-Captura el output de:
+
 
 ```bash
 ls -lh coldplay.mp4 coldplay_264.mkv coldplay_265.mkv
@@ -1116,7 +1116,7 @@ ls -lh coldplay_mp3.mkv coldplay_aac.mkv coldplay_vorbis.mkv
 
 ### 5.8.3 Screenshot recomendado
 
-Captura la ejecución de los tres comandos y el output final. También es recomendable capturar la comparación de tamaños.
+
 
 **Observación de evaluación:**\
 Este paso demuestra que vídeo y audio son streams independientes. Es posible copiar uno y recodificar el otro.
@@ -1144,8 +1144,6 @@ frame=  ...  bitrate=2691.2kbits/s speed=2.5x
 El bitrate determina cuántos datos por segundo se utilizan para representar el contenido. Un bitrate alto suele producir mejor calidad y mayor tamaño de archivo. Un bitrate bajo reduce el tamaño, pero puede degradar la calidad.
 
 ### 5.9.1 Screenshot recomendado
-
-Captura el output durante la codificación y el mensaje final.
 
 **Observación de evaluación:**\
 El bitrate es una de las variables más importantes en compresión multimedia porque representa el equilibrio entre calidad, tamaño y ancho de banda.
@@ -1188,7 +1186,7 @@ No debe aparecer ningún stream de vídeo.
 
 ### 5.10.2 Screenshot recomendado
 
-Captura el output de la extracción y, si es posible, también la verificación posterior.
+
 
 ***
 
@@ -1322,7 +1320,7 @@ ls -l /usr/local/bin/yt-dlp
 
 ### 6.3.1 Screenshot recomendado
 
-Captura el comando `chmod` y, preferiblemente, el resultado de:
+
 
 ```bash
 ls -l /usr/local/bin/yt-dlp
@@ -1432,7 +1430,7 @@ En YouTube, los formatos de alta resolución suelen estar separados en vídeo on
 
 ### 6.6.1 Screenshot recomendado
 
-Captura la tabla completa de formatos disponibles.
+
 
 ### 6.6.2 Posible error
 
@@ -1501,7 +1499,7 @@ Sin FFmpeg instalado, este paso no podría completarse correctamente.
 
 ### 6.8.1 Screenshot recomendado
 
-Captura el proceso de descarga y especialmente la parte donde aparece:
+
 
 ```
 [ffmpeg] Merging formats into ...
@@ -1534,7 +1532,7 @@ Internamente, yt-dlp usa FFmpeg para convertir el audio al formato solicitado.
 
 ### 6.9.3 Screenshot recomendado
 
-Captura la descarga con `-x` mostrando la conversión a MP3.
+
 
 ### 6.9.4 Descargar calidad específica, por ejemplo 1080p
 
