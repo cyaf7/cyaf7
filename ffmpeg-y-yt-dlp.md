@@ -2,7 +2,7 @@
 
 
 
-###
+
 
 1. Descripción general de la actividad
 2. Máquinas virtuales necesarias
@@ -859,8 +859,6 @@ Este output confirma que FFmpeg está instalado y funcional. La información de 
 * `libswscale`: escalado y conversión de formatos de píxel.
 * `libswresample`: remuestreo de audio.
 
-###
-
 ***
 
 ## 5.4 Paso 4: explorar la ayuda de FFmpeg
@@ -1145,10 +1143,6 @@ Stream #0:0: Audio:
 ```
 
 No debe aparecer ningún stream de vídeo.
-
-
-
-
 
 ***
 
