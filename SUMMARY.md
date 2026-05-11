@@ -107,3 +107,4 @@
   * [SPOTLY -  Infraestructura](proyeto/spotly-infraestructura.md)
   * [Spotly](proyeto/spotly.md)
   * [hardware requerido](proyeto/hardware-requerido.md)
+  * [La explicación](proyeto/la-explicacion.md)
