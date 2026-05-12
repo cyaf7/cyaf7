@@ -385,9 +385,7 @@ En este proyecto no fue posible implementar esta arquitectura debido a la dispon
 
 ### 12. Herramientas utilizadas dentro del cluster
 
-#### 12.1 Podman en lugar de Docker
 
-Todos los servicios se ejecutan como contenedores Podman dentro de las máquinas virtuales LXD. Podman es un motor de contenedores compatible con la especificación OCI que presenta ventajas de seguridad respecto a Docker: los contenedores se ejecutan sin privilegios de root por diseño (rootless), no existe un daemon persistente que se ejecute como root, y es completamente compatible con los comandos Docker existentes.
 
 #### 12.2 FastAPI, PostgreSQL y WebSocket
 
@@ -431,19 +429,13 @@ Como segunda capa de protección, se realiza periódicamente una copia de los da
 
 Ansible es una herramienta de automatización de infraestructura que permite gestionar la configuración de múltiples servidores de forma simultánea mediante ficheros YAML llamados playbooks. No requiere la instalación de ningún agente en los servidores gestionados: se conecta por SSH y ejecuta los comandos necesarios de forma remota. Un único playbook puede instalar paquetes, configurar ficheros, gestionar servicios y verificar el estado de las tres máquinas en paralelo.
 
-#### 14.2 Semaphore
-
-Semaphore es una interfaz web de código abierto para Ansible que permite ejecutar playbooks, gestionar inventarios y visualizar el historial de ejecuciones sin necesidad de acceder a la línea de comandos. Centraliza la ejecución de tareas de administración y facilita la colaboración entre los miembros del equipo.
-
 ### 15. Acceso remoto: Tailscale y WireGuard
 
 #### 15.1 Tailscale
 
 Tailscale es una VPN mesh basada en WireGuard que simplifica la conexión entre dispositivos. Gestiona automáticamente el descubrimiento de peers y el establecimiento de túneles cifrados. Se utiliza actualmente durante el desarrollo para acceder a los nodos desde fuera del laboratorio, usando una cuenta compartida del equipo para evitar el uso de credenciales personales.
 
-#### 15.2 WireGuard en OPNsense
 
-WireGuard es el protocolo VPN que se implementará en OPNsense como solución de acceso remoto definitiva. El administrador se conecta a la IP pública del firewall, y desde ahí accede a la VLAN 20 (management) para administrar los nodos por SSH. A diferencia de Tailscale, WireGuard en OPNsense no depende de servidores externos y es gestionado completamente por la infraestructura propia.
 
 ## 16. Protocolos utilizados en el sistema
 
