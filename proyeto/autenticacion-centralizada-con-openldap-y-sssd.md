@@ -1,8 +1,4 @@
-# Untitled
-
-***
-
-## Autenticación centralizada con OpenLDAP y SSSD
+# Autenticación centralizada con OpenLDAP y SSSD
 
 ### Descripción general
 
