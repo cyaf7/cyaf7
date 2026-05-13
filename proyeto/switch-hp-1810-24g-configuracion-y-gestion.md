@@ -41,7 +41,7 @@ DNS Servers: 8.8.8.8, 8.8.4.4
 
 ### Conceptos Fundamentales
 
-#### Port vs VLAN vs Trunk (¡NO confundir!)
+#### Port vs VLAN vs Trunk
 
 **PORT** (Puerto):
 
@@ -57,7 +57,7 @@ DNS Servers: 8.8.8.8, 8.8.4.4
 
 **TRUNK** (en HP) = Aggregation:
 
-* LACP Link Aggregation (NOT VLAN trunking)
+* LACP Link Aggregation (NO VLAN trunking)
 * Combina múltiples puertos físicos en 1 enlace lógico
 * **NO lo usamos en Spotly**
 
