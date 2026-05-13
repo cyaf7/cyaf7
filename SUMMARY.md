@@ -111,3 +111,4 @@
   * [1.2 OPNsense - Firewall y Router Central](proyeto/1.2-opnsense-firewall-y-router-central.md)
   * [Autenticación centralizada con OpenLDAP y SSSD](proyeto/autenticacion-centralizada-con-openldap-y-sssd.md)
   * [Automatización con Ansible](proyeto/automatizacion-con-ansible.md)
+  * [Switch HP 1810-24G - Configuración y Gestión](proyeto/switch-hp-1810-24g-configuracion-y-gestion.md)
