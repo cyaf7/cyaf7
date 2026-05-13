@@ -213,31 +213,12 @@ Interfaz visual para monitorizar el estado del sistema.
 
 ***
 
-## 11. Uso de contenedores Podman
-
-Dentro de cada máquina virtual los servicios se ejecutan en contenedores Podman.
-
-Podman es un motor de contenedores similar a Docker, pero diseñado para funcionar sin un proceso central permanente.
-
-El modelo de ejecución es:
-
-Servidor físico\
--> Máquina virtual LXD\
--> Contenedores Podman
-
-Esto permite aislar los servicios y facilitar su gestión.
-
-***
-
-## 12. Redes del sistema
+## 11. Redes del sistema
 
 El sistema utiliza varias redes para separar funciones.
 
 WAN\
 Conexión a Internet.
-
-DMZ\
-Zona donde se publica el punto de entrada del sistema.
 
 LAN\
 Red interna de infraestructura.
@@ -264,36 +245,7 @@ VPN\
 
 ***
 
-## 13. Conexión VPN y red de administración
-
-La administración del sistema no se realiza directamente desde Internet.
-
-Primero el administrador se conecta a la VPN mediante WireGuard.
-
-Una vez conectado, el portátil obtiene una dirección en la red VPN.
-
-Ejemplo:
-
-Portátil administrador\
-10.99.0.10
-
-El firewall conecta la red VPN con la red MGMT.
-
-Desde esa red el administrador puede acceder por SSH a los nodos del clúster.
-
-El flujo es:
-
-Portátil\
-\- VPN WireGuard\
-\- firewall\
-\- red MGMT\
-\- nodos del clúster
-
-Esto evita exponer servicios administrativos al exterior.
-
-***
-
-## 14. Redes virtuales internas (OVN)
+## 12. Redes virtuales internas (OVN)
 
 Dentro del clúster se utilizan redes OVN para separar servicios.
 
@@ -317,7 +269,7 @@ La segmentación permite controlar mejor qué servicios pueden comunicarse entre
 
 ***
 
-## 15. Flujo completo del sistema
+## 13. Flujo completo del sistema
 
 Cuando un vehículo ocupa una plaza ocurre el siguiente proceso:
 

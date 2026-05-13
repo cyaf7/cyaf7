@@ -1,30 +1,8 @@
-# 1.2 OPNsense - Firewall y Router Central
+# OPNsense - Firewall y Router Central
 
 ### Introducción
 
 OPNsense es el corazón de la red de Spotly. Todos los paquetes entre VLANs pasan por él. Sin OPNsense correctamente configurado, la segmentación VLAN es inútil.
-
-### Instalación de OPNsense
-
-#### Post-Instalación
-
-Después de rebootear:
-
-```
-Welcome to OPNsense
-─────────────────
-FreeBSD 13.2-RELEASE
-OPNsense 26.1.2_5-amd64
-
-dhclient: BOUND 192.168.109.x on em0
-Web GUI is available at:
-  https://192.168.109.x
-
-SSH is available at:
-  ssh root@192.168.109.x
-```
-
-***
 
 ### Acceso a la Web UI
 
