@@ -131,6 +131,8 @@ ansible-playbook -i /root/ansible/inventory/hosts_vms.yml \
 
 ## Catálogo de Playbooks
 
+<figure><img src="../.gitbook/assets/Screenshot 2026-05-13 at 6.33.59 pm.png" alt=""><figcaption></figcaption></figure>
+
 ### 1. bootstrap.yml
 
 **Propósito:** Preparación inicial de todos los nodos para integración con Ansible y MicroCloud.
