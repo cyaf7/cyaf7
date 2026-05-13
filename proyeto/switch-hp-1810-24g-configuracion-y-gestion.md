@@ -98,7 +98,7 @@ Requiere: dispositivo NO entienda 802.1Q
 **Excluded (E)**:
 
 ```
-Switch → Dispositivo:
+Switch -> Dispositivo:
   Trama con VLAN 30 etiqueta:
     Puerto tiene VLAN30=E
      Trama es DESCARTADA
@@ -136,9 +136,7 @@ VLAN Participation:
   VLAN 1: Excluded
   VLAN 10: Excluded
   VLAN 20: Untagged <- Acceso directo a VLAN 20
-  VLAN 30: Excluded
   VLAN 40: Excluded
-  VLAN 50: Excluded
 ```
 
 **Resultado**: Windows obtiene IP 192.168.20.x automáticamente (DHCP desde OPNsense)
