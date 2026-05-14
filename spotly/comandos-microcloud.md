@@ -102,6 +102,14 @@ Este documento cubre los comandos principales de MicroCloud (lxc, microceph, mic
 
 **sudo ceph pg stat** — Muestra estadísticas de los placement groups (unidades de replicación de datos en Ceph). Útil para diagnóstico de rebalanceo lento.
 
+`df -h /` — Muestra el espacio disponible en el disco raíz del sistema operativo. En este proyecto es especialmente relevante porque el archivo `ceph-osd.img` vive dentro del mismo volumen lógico que el sistema operativo (ubuntu-lv). Si el disco raíz se llena, el OSD no puede escribir y el cluster empieza a reportar errores aunque el problema no sea de Ceph en sí, sino de espacio en el sistema host.
+
+`sudo du -sh /mnt/ceph-disks/ceph-osd.img` — Muestra cuánto espacio físico real está ocupando el loop file del OSD en disco. El archivo fue creado con `truncate` (sparse), por lo que su tamaño lógico es 200 GB pero su tamaño físico real crece progresivamente a medida que MicroCeph escribe y replica datos. Comparar este valor con `df -h /` permite entender cuánto espacio le queda al sistema antes de que el OSD empiece a fallar.
+
+`df -h /mnt` — Confirma que `/mnt/ceph-disks/` comparte el mismo filesystem que el sistema operativo. Si muestra el mismo dispositivo (`/dev/mapper/ubuntu--vg-ubuntu--lv`) que `df -h /`, significa que el loop file y el sistema operativo compiten por el mismo espacio en disco, que es exactamente la limitación de hardware de este proyecto.
+
+`sudo lvextend -L +XG /dev/ubuntu-vg/ubuntu-lv && sudo resize2fs /dev/ubuntu-vg/ubuntu-lv` — Amplía el volumen lógico del sistema operativo usando el espacio libre disponible en el VG. El instalador de Ubuntu por defecto solo asigna 100 GB al ubuntu-lv aunque el disco físico tenga mucho más. Este comando recupera ese espacio sin reiniciar ni interrumpir el cluster. Se aplicó en nodo02 y nodo03 cuando el disco raíz llegó a niveles críticos de ocupación.
+
 ### Comandos microovn — Redes Virtuales
 
 **lxc network list** — Lista todas las redes disponibles en el cluster: redes OVN creadas (ovn-infra, ovn-app, ovn-dmz), red física (UPLINK), redes por defecto.
