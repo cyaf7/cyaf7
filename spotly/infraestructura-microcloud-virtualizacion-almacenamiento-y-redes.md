@@ -62,8 +62,6 @@ El equipo intentó dos soluciones antes de encontrar la definitiva:
 
 **Intento 1: Volúmenes LVM dentro de ubuntu-vg.** Se crearon volúmenes lógicos de 200 GB dentro del Volume Group existente del sistema operativo. MicroCeph los rechazó porque requiere dispositivos de bloque completamente independientes del VG del sistema.
 
-**Intento 2: Nueva partición física en `/dev/sda`.** El kernel de Linux no permite modificar la tabla de particiones de un disco cuya partición raíz está montada. El error fue: `Partition(s) on /dev/sda are being used`.
-
 **Solución adoptada: Loop files como OSDs.** Un loop file es un fichero regular almacenado en el disco que el kernel presenta al sistema como si fuera un dispositivo de bloque físico. MicroCeph acepta estos dispositivos como OSDs sin distinción. Esta es la solución oficial recomendada por Canonical para entornos de laboratorio.
 
 #### Implementación de los loop files
@@ -85,16 +83,15 @@ losetup -j /mnt/ceph-disks/ceph-osd.img | grep -q loop || \
 
 El guard evita crear dispositivos duplicados si el fichero ya estaba montado, que fue la causa raíz del fallo de OSD en nodo02.
 
-#### Estado del clúster de almacenamiento
+#### Alta disponibilidad: arquitectura ideal vs entorno de laboratorio
 
-El clúster Ceph opera con tres OSDs activos (uno por nodo) y estado `HEALTH_OK`. Los servicios que corren en cada nodo son: `mds`, `mgr`, `mon` y `osd`.
+MicroCloud proporciona alta disponibilidad a nivel de datos mediante MicroCeph: con el factor de replicación por defecto de 3, cada bloque de datos existe simultáneamente en los tres nodos del clúster. Si un nodo falla, los datos siguen siendo accesibles desde los otros dos. LXD también permite la migración automática de máquinas virtuales entre nodos cuando uno de ellos queda fuera de servicio.
 
-```
-MicroCeph deployment summary:
-- nodo02 (192.168.10.12)  Disks: 3
-- nodo03 (192.168.10.13)  Disks: 2
-- nodo01 (192.168.10.11)  Disks: 1
-```
+Sin embargo, existe una distinción importante entre alta disponibilidad a nivel de software y alta disponibilidad a nivel de hardware físico. En un entorno de producción real, cada nodo del clúster debería tener una máquina física idéntica como réplica de respaldo. Si el hardware de un nodo falla completamente, por ejemplo por un fallo de la placa base o de la fuente de alimentación, ese nodo queda fuera del cluster hasta ser reparado o sustituido. Durante ese tiempo, el cluster opera con dos nodos en lugar de tres, lo que reduce la tolerancia a fallos adicionales.
+
+La arquitectura ideal para un despliegue de producción sería la siguiente: por cada nodo del cluster existiría una máquina física idéntica en standby, con el mismo hardware, la misma configuración de red y el mismo software instalado. Si el nodo principal falla, la máquina de standby entra en el cluster automáticamente sin intervención manual, manteniendo el clúster en tres nodos activos en todo momento. Este modelo se denomina N+1 redundancy, donde N es el número de nodos necesarios para operar y el 1 adicional garantiza continuidad ante un fallo.
+
+En este proyecto no fue posible implementar esta arquitectura debido a la disponibilidad limitada de hardware en el laboratorio. Los seis ordenadores Dell disponibles se distribuyeron entre los roles esenciales del sistema: tres nodos de MicroCloud, un firewall, un equipo de administración y uno destinado a backup. No quedaban equipos disponibles para actuar como réplicas físicas de los nodos del clúster. Esta limitación queda documentada como una diferencia conocida respecto a un despliegue de producción real, y no afecta a la validez funcional del sistema en el entorno de laboratorio.
 
 ***
 
