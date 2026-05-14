@@ -70,7 +70,7 @@ Este documento cubre los comandos principales de MicroCloud (lxc, microceph, mic
 
 **lxc snapshot nombre nombre-snapshot** — Crea un snapshot (copia de punto-en-tiempo) de una máquina virtual. El snapshot captura el estado completo del disco en ese instante y se almacena en MicroCeph con deduplicación automática. Permite revertir a ese estado si algo falla posteriormente.
 
-**lxc snapshot list nombre** — Lista todos los snapshots de una máquina virtual específica mostrando su nombre y fecha de creación.
+**lxc snapshot info nombre** — Lista todos los snapshots de una máquina virtual específica mostrando su nombre y fecha de creación.
 
 **lxc restore nombre nombre-snapshot** — Revierte una máquina virtual a un snapshot anterior. La máquina debe estar detenida. Todos los cambios posteriores al snapshot se pierden.
 
